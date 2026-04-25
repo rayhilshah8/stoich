@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Chemistry Study App</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: #f5f7fa;
+}
+header {
+    background: #2c3e50;
+    color: white;
+    padding: 15px;
+    text-align: center;
+}
+nav {
+    display: flex;
+    background: #34495e;
+}
+nav button {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    background: #34495e;
+    color: white;
+    cursor: pointer;
+}
+nav button:hover {
+    background: #1abc9c;
+}
+.section {
+    display: none;
+    padding: 20px;
+}
+.active {
+    display: block;
+}
+.card {
+    background: white;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 8px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+.quiz button {
+    margin-top: 10px;
+}
+.correct { color: green; }
+.wrong { color: red; }
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>Chemistry Study App</h1>
+<p>Stoichiometry + Math Skills (Detailed Learning Mode)</p>
+</header>
+
+<nav>
+<button onclick="showSection('sec12')">Sections 1 & 2</button>
+<button onclick="showSection('sec4')">Section 4</button>
+</nav>
+
+<!-- ================= SECTION 1 & 2 ================= -->
+<div id="sec12" class="section active">
+
+<h2>Sections 1 & 2 — Foundations</h2>
+
+<div class="card">
+<h3>1. Why Stoichiometry Exists</h3>
+<p>
+Chemistry is about <b>counting things you cannot see</b>. You cannot count atoms directly,
+so you use <b>mass + ratios</b> to figure out how many particles are involved.
+</p>
+<p>
+Key idea: <b>Mass is NOT counting</b>. Two substances can have the same mass but different numbers of molecules.
+</p>
+</div>
+
+<div class="card">
+<h3>2. The Mole (Core Concept)</h3>
+<p>
+1 mole = <b>6.022 × 10²³ particles</b>
+</p>
+<p>
+Think of it like a “chemist’s dozen”—just a really huge counting unit.
+</p>
+
+<p><b>Examples:</b></p>
+<ul>
+<li>1 mole of Na = 23 g</li>
+<li>1 mole of O₂ = 32 g</li>
+</ul>
+
+<p>
+This connects:
+<ul>
+<li>mass ↔ moles ↔ particles</li>
+</ul>
+</p>
+</div>
+
+<div class="card">
+<h3>3. Dimensional Analysis (Most Important Skill)</h3>
+<p>
+This is how you convert units correctly using fractions.
+</p>
+
+<p><b>Example:</b></p>
+<p>
+3 yards × (36 inches / 1 yard) = 108 inches
+</p>
+
+<p>
+Rule: <b>Units must cancel</b>
+</p>
+</div>
+
+<div class="card">
+<h3>4. Metric Conversions (Base-10 System)</h3>
+<p>
+Each step = ×10 or ÷10
+</p>
+
+<p><b>Example:</b></p>
+<p>
+1 dg = 100 mg
+</p>
+
+<p>
+Because you move 2 steps → ×100
+</p>
+</div>
+
+<div class="card">
+<h3>5. Significant Figures (Precision Rules)</h3>
+
+<ul>
+<li>All non-zero numbers count</li>
+<li>Leading zeros do NOT count</li>
+<li>Trailing zeros count ONLY with a decimal</li>
+</ul>
+
+<p><b>Example:</b></p>
+<p>0.00450 → 3 sig figs</p>
+
+<p><b>Operations:</b></p>
+<ul>
+<li>Multiplication → least sig figs</li>
+<li>Addition → least decimal places</li>
+</ul>
+</div>
+
+<div class="card">
+<h3>6. Ratios (Foundation of Stoichiometry)</h3>
+<p>
+Ratios let you scale quantities.
+</p>
+
+<p>
+Example:
+2 H₂ + O₂ → 2 H₂O
+</p>
+
+<p>
+This means:
+<ul>
+<li>2 moles H₂ react with 1 mole O₂</li>
+</ul>
+</p>
+</div>
+
+<div class="card quiz">
+<h3>Quick Check</h3>
+
+<p>How many moles are in 44 g of CO₂?</p>
+
+<button onclick="checkAnswer(this, 'wrong')">1 mole</button>
+<button onclick="checkAnswer(this, 'correct')">1 mole</button>
+<button onclick="checkAnswer(this, 'wrong')">2 moles</button>
+
+<p class="result"></p>
+</div>
+
+</div>
+
+<!-- ================= SECTION 4 ================= -->
+<div id="sec4" class="section">
+
+<h2>Section 4 — Stoichiometry (Applications)</h2>
+
+<div class="card">
+<h3>1. The Big Idea</h3>
+<p>
+Stoichiometry = using ratios + moles to predict quantities in reactions.
+</p>
+</div>
+
+<div class="card">
+<h3>2. Step-by-Step Process</h3>
+
+<ol>
+<li>Convert given → moles</li>
+<li>Use mole ratio</li>
+<li>Convert to desired unit</li>
+</ol>
+
+</div>
+
+<div class="card">
+<h3>3. Example Problem</h3>
+
+<p>
+How many grams of H₂O form from 2 moles of H₂?
+</p>
+
+<p>
+Balanced equation:
+2 H₂ + O₂ → 2 H₂O
+</p>
+
+<p>
+Step 1: Ratio = 2:2 → 1:1</p>
+<p>
+Step 2: 2 mol H₂ → 2 mol H₂O
+</p>
+<p>
+Step 3: Convert to grams:
+2 × 18 = 36 g
+</p>
+
+<p><b>Answer: 36 g H₂O</b></p>
+
+</div>
+
+<div class="card">
+<h3>4. Limiting Reactant</h3>
+
+<p>
+The limiting reactant is the one that runs out first.
+</p>
+
+<p>
+It determines how much product you can make.
+</p>
+
+</div>
+
+<div class="card">
+<h3>5. Why Mass Alone Fails</h3>
+
+<p>
+From your packet:
+</p>
+
+<ul>
+<li>Same mass ≠ same number of molecules</li>
+<li>You must convert to moles first</li>
+</ul>
+
+</div>
+
+<div class="card quiz">
+<h3>Practice</h3>
+
+<p>
+If you have 3 moles of O₂, how many moles of H₂O form?
+</p>
+
+<button onclick="checkAnswer(this, 'correct')">6 moles</button>
+<button onclick="checkAnswer(this, 'wrong')">3 moles</button>
+<button onclick="checkAnswer(this, 'wrong')">1.5 moles</button>
+
+<p class="result"></p>
+
+</div>
+
+</div>
+
+<script>
+function showSection(id) {
+    document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+}
+
+function checkAnswer(btn, result) {
+    const parent = btn.parentElement;
+    const output = parent.querySelector('.result');
+    if(result === 'correct') {
+        output.textContent = "Correct!";
+        output.className = "result correct";
+    } else {
+        output.textContent = "Try again.";
+        output.className = "result wrong";
+    }
+}
+</script>
+
+</body>
+</html>
