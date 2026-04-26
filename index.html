@@ -1,1 +1,1254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stoichiometry Study App</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f2; color: #1a1a1a; line-height: 1.6; }
 
+/* Layout */
+.app-container { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem; }
+.app-header { margin-bottom: 2rem; border-bottom: 1px solid #e0e0da; padding-bottom: 1rem; }
+.app-header h1 { font-size: 22px; font-weight: 500; margin-bottom: 4px; }
+.app-header p { font-size: 13px; color: #666; }
+
+/* Section tabs */
+.section-tabs { display: flex; gap: 8px; margin-bottom: 1.5rem; }
+.tab-btn { padding: 9px 22px; border: 1px solid #d0d0c8; border-radius: 8px; background: white; cursor: pointer; font-size: 14px; color: #555; font-family: inherit; transition: all 0.15s; }
+.tab-btn:hover { background: #f0f0ec; border-color: #b0b0a8; }
+.tab-btn.active { background: #1a1a1a; color: white; border-color: #1a1a1a; font-weight: 500; }
+
+/* Section */
+.section { display: none; }
+.section.active { display: block; }
+.section-desc { font-size: 13px; color: #888; margin-bottom: 1.25rem; padding-bottom: 0.75rem; border-bottom: 1px solid #e8e8e4; }
+
+/* Mode tabs */
+.mode-tabs { display: flex; gap: 6px; margin-bottom: 1.5rem; }
+.mode-btn { padding: 6px 16px; border: 1px solid #d0d0c8; border-radius: 6px; background: white; cursor: pointer; font-size: 13px; color: #555; font-family: inherit; }
+.mode-btn:hover { background: #f0f0ec; }
+.mode-btn.active { background: #f0f0ec; border-color: #999; color: #1a1a1a; font-weight: 500; }
+
+/* Topic grid */
+.topic-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; margin-bottom: 1.5rem; }
+.topic-btn { padding: 12px 14px; border: 1px solid #e0e0da; border-radius: 10px; background: white; cursor: pointer; text-align: left; font-family: inherit; transition: all 0.12s; }
+.topic-btn:hover { border-color: #b0b0a8; background: #fafaf8; }
+.topic-btn.active { border-color: #1a1a1a; background: white; }
+.topic-label { font-size: 11px; color: #999; margin-bottom: 3px; }
+.topic-title { font-weight: 500; font-size: 13px; color: #1a1a1a; }
+
+/* Content area */
+.content-area { background: white; border: 1px solid #e0e0da; border-radius: 12px; padding: 1.75rem; min-height: 400px; }
+.topic-content { display: none; }
+.topic-content.active { display: block; }
+
+/* Concept blocks */
+.concept-block { margin-bottom: 1.75rem; padding-bottom: 1.75rem; border-bottom: 1px solid #f0f0ec; }
+.concept-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.concept-title { font-size: 16px; font-weight: 500; margin-bottom: 0.75rem; }
+.concept-body { font-size: 14px; line-height: 1.75; color: #333; }
+.concept-body p { margin-bottom: 0.75rem; }
+.concept-body p:last-child { margin-bottom: 0; }
+
+/* Special boxes */
+.example-box { background: #f8f8f5; border-radius: 8px; padding: 1rem 1.1rem; margin: 0.75rem 0; font-size: 13px; line-height: 1.7; color: #333; }
+.example-label { font-size: 10px; font-weight: 500; color: #999; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+.warning-box { border-left: 3px solid #e8a030; padding: 0.7rem 1rem; margin: 0.75rem 0; background: #fdf8f0; font-size: 13px; color: #7a5010; line-height: 1.6; }
+.tip-box { border-left: 3px solid #3080c8; padding: 0.7rem 1rem; margin: 0.75rem 0; background: #f0f6fd; font-size: 13px; color: #1a4a80; line-height: 1.6; }
+.math-display { font-family: 'Courier New', monospace; background: #f5f5f2; padding: 8px 14px; border-radius: 6px; font-size: 13px; margin: 8px 0; color: #1a1a1a; border: 1px solid #e8e8e4; word-break: break-word; }
+
+/* Lists */
+.rule-list { list-style: none; padding: 0; }
+.rule-list li { padding: 5px 0 5px 18px; position: relative; font-size: 14px; color: #333; line-height: 1.65; }
+.rule-list li::before { content: ''; position: absolute; left: 0; top: 13px; width: 5px; height: 5px; border-radius: 50%; background: #bbb; }
+.step-list { counter-reset: steps; list-style: none; padding: 0; }
+.step-list li { counter-increment: steps; padding: 8px 0 8px 34px; position: relative; font-size: 14px; color: #333; line-height: 1.65; border-bottom: 1px solid #f0f0ec; }
+.step-list li:last-child { border-bottom: none; }
+.step-list li::before { content: counter(steps); position: absolute; left: 0; top: 9px; width: 22px; height: 22px; border-radius: 50%; background: #f0f0ec; border: 1px solid #ddd; font-size: 11px; font-weight: 500; color: #555; text-align: center; line-height: 22px; }
+
+/* Tables */
+.table-wrap { overflow-x: auto; margin: 0.75rem 0; border-radius: 8px; border: 1px solid #e8e8e4; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 9px 14px; background: #f8f8f5; font-weight: 500; color: #333; border-bottom: 1px solid #e8e8e4; }
+td { padding: 8px 14px; border-bottom: 1px solid #f0f0ec; color: #444; vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+
+/* ===== FLASHCARD SYSTEM ===== */
+.flashcard-area { padding: 0.5rem 0; }
+.fc-controls { display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem; flex-wrap: wrap; }
+.fc-controls label { font-size: 13px; color: #666; }
+.fc-controls select { padding: 6px 10px; border: 1px solid #d0d0c8; border-radius: 6px; font-size: 13px; font-family: inherit; background: white; cursor: pointer; }
+.fc-count { font-size: 13px; color: #888; margin-left: auto; }
+
+.flashcard { background: white; border: 1px solid #e0e0da; border-radius: 14px; min-height: 280px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center; cursor: pointer; position: relative; transition: border-color 0.15s; user-select: none; }
+.flashcard:hover { border-color: #b0b0a8; }
+.flashcard .fc-tag { position: absolute; top: 16px; left: 16px; font-size: 11px; color: #bbb; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+.flashcard .fc-flip-hint { position: absolute; bottom: 16px; right: 16px; font-size: 11px; color: #ccc; }
+.flashcard .fc-question { font-size: 17px; font-weight: 500; color: #1a1a1a; line-height: 1.5; max-width: 580px; }
+.flashcard .fc-answer { display: none; }
+.flashcard.flipped .fc-question { display: none; }
+.flashcard.flipped .fc-answer { display: block; font-size: 15px; color: #333; line-height: 1.7; max-width: 600px; }
+.flashcard.flipped { border-color: #3080c8; background: #fafcff; }
+.flashcard .fc-math { font-family: 'Courier New', monospace; background: #f5f5f2; padding: 6px 12px; border-radius: 5px; font-size: 13px; display: inline-block; margin: 6px 0; border: 1px solid #e8e8e4; }
+
+.fc-nav { display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; gap: 10px; }
+.fc-nav-btn { padding: 8px 20px; border: 1px solid #d0d0c8; border-radius: 7px; background: white; cursor: pointer; font-size: 13px; font-family: inherit; color: #333; }
+.fc-nav-btn:hover { background: #f0f0ec; }
+.fc-nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.fc-result-btns { display: flex; gap: 8px; }
+.fc-btn-hard { padding: 7px 18px; border: 1px solid #e8a030; border-radius: 7px; background: #fdf8f0; cursor: pointer; font-size: 12px; font-family: inherit; color: #7a5010; }
+.fc-btn-got { padding: 7px 18px; border: 1px solid #3a9a60; border-radius: 7px; background: #f0faf4; cursor: pointer; font-size: 12px; font-family: inherit; color: #1a5a35; }
+.fc-progress { height: 3px; background: #f0f0ec; border-radius: 2px; margin-bottom: 1rem; overflow: hidden; }
+.fc-progress-bar { height: 100%; background: #3080c8; border-radius: 2px; transition: width 0.3s; }
+
+/* ===== PRACTICE QUIZ SYSTEM ===== */
+.quiz-area { padding: 0.5rem 0; }
+.quiz-controls { display: flex; gap: 10px; margin-bottom: 1.25rem; flex-wrap: wrap; align-items: center; }
+.quiz-controls select { padding: 6px 10px; border: 1px solid #d0d0c8; border-radius: 6px; font-size: 13px; font-family: inherit; background: white; cursor: pointer; }
+.quiz-start-btn { padding: 7px 20px; border: 1px solid #1a1a1a; border-radius: 7px; background: #1a1a1a; color: white; cursor: pointer; font-size: 13px; font-family: inherit; }
+.quiz-start-btn:hover { background: #333; }
+
+.quiz-question-block { margin-bottom: 1.5rem; }
+.q-number { font-size: 11px; color: #999; margin-bottom: 6px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+.q-text { font-size: 15px; font-weight: 500; margin-bottom: 1rem; line-height: 1.5; }
+.q-context { font-size: 13px; color: #555; margin-bottom: 0.75rem; background: #f8f8f5; padding: 0.75rem 1rem; border-radius: 7px; line-height: 1.65; }
+.q-options { display: flex; flex-direction: column; gap: 8px; }
+.q-option { padding: 10px 14px; border: 1px solid #e0e0da; border-radius: 8px; cursor: pointer; font-size: 14px; background: white; text-align: left; font-family: inherit; transition: all 0.12s; line-height: 1.5; }
+.q-option:hover:not(:disabled) { border-color: #b0b0a8; background: #fafaf8; }
+.q-option.correct { border-color: #3a9a60; background: #f0faf4; color: #1a5a35; }
+.q-option.wrong { border-color: #c84040; background: #fff0f0; color: #7a1a1a; }
+.q-option.reveal-correct { border-color: #3a9a60; background: #f0faf4; color: #1a5a35; }
+.q-option:disabled { cursor: not-allowed; }
+.q-explanation { margin-top: 0.75rem; padding: 0.75rem 1rem; background: #f8f8f5; border-radius: 8px; font-size: 13px; color: #444; line-height: 1.65; display: none; }
+.q-explanation.show { display: block; }
+.q-explanation strong { color: #1a1a1a; }
+
+.quiz-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #f0f0ec; }
+.quiz-score { font-size: 13px; color: #666; }
+.quiz-next-btn { padding: 8px 22px; border: 1px solid #1a1a1a; border-radius: 7px; background: #1a1a1a; color: white; cursor: pointer; font-size: 13px; font-family: inherit; display: none; }
+.quiz-next-btn:hover { background: #333; }
+.quiz-next-btn.show { display: block; }
+
+.quiz-summary { text-align: center; padding: 2rem; }
+.quiz-summary h3 { font-size: 20px; font-weight: 500; margin-bottom: 0.5rem; }
+.quiz-summary .score-big { font-size: 48px; font-weight: 500; margin: 1rem 0; color: #3080c8; }
+.quiz-summary p { font-size: 14px; color: #666; margin-bottom: 1.5rem; }
+.quiz-restart-btn { padding: 9px 24px; border: 1px solid #1a1a1a; border-radius: 8px; background: #1a1a1a; color: white; cursor: pointer; font-size: 14px; font-family: inherit; }
+
+/* Responsive */
+@media (max-width: 600px) {
+  .app-container { padding: 1rem; }
+  .topic-grid { grid-template-columns: 1fr 1fr; }
+  .fc-result-btns { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+<div class="app-container">
+  <div class="app-header">
+    <h1>Stoichiometry Study App</h1>
+    <p>Unit 6 — Takou Chemistry · Sections 1 & 2 (pages 1–49) and Section 4 (pages 50–68)</p>
+  </div>
+
+  <div class="section-tabs">
+    <button class="tab-btn active" onclick="showSection('s12', this)">Sections 1 & 2</button>
+    <button class="tab-btn" onclick="showSection('s4', this)">Section 4</button>
+  </div>
+
+  <!-- ===== SECTIONS 1 & 2 ===== -->
+  <div id="s12" class="section active">
+    <p class="section-desc">Pages 1–49 · Math foundations, significant figures, scientific notation, the mole, dimensional analysis, mole conversions</p>
+
+    <div class="mode-tabs">
+      <button class="mode-btn active" onclick="showMode('s12','notes',this)">Notes</button>
+      <button class="mode-btn" onclick="showMode('s12','flashcards',this)">Flashcards</button>
+      <button class="mode-btn" onclick="showMode('s12','quiz',this)">Practice Quiz</button>
+    </div>
+
+    <!-- NOTES MODE -->
+    <div id="s12-notes" class="mode-panel">
+      <div class="topic-grid">
+        <button class="topic-btn active" onclick="showTopic('s12','why',this)"><div class="topic-label">Notes 1</div><div class="topic-title">Why stoichiometry?</div></button>
+        <button class="topic-btn" onclick="showTopic('s12','sigfigs',this)"><div class="topic-label">Practice 1D</div><div class="topic-title">Significant figures</div></button>
+        <button class="topic-btn" onclick="showTopic('s12','scinotation',this)"><div class="topic-label">Practice 1</div><div class="topic-title">Scientific notation</div></button>
+        <button class="topic-btn" onclick="showTopic('s12','ratios',this)"><div class="topic-label">Practice 1B</div><div class="topic-title">Ratios & fractions</div></button>
+        <button class="topic-btn" onclick="showTopic('s12','mole',this)"><div class="topic-label">Notes 2</div><div class="topic-title">The mole</div></button>
+        <button class="topic-btn" onclick="showTopic('s12','molarmass',this)"><div class="topic-label">Practice 2A</div><div class="topic-title">Molar mass</div></button>
+        <button class="topic-btn" onclick="showTopic('s12','dimanalysis',this)"><div class="topic-label">Notes 2</div><div class="topic-title">Dimensional analysis</div></button>
+        <button class="topic-btn" onclick="showTopic('s12','conversions',this)"><div class="topic-label">Practice 2G/H</div><div class="topic-title">Mole conversions</div></button>
+      </div>
+      <div class="content-area">
+
+        <div id="s12-why" class="topic-content active">
+          <div class="concept-block">
+            <div class="concept-title">Why can't we just weigh things?</div>
+            <div class="concept-body">
+              <p>In chemistry, reactions happen between molecules — not grams. Two substances can weigh exactly the same but contain completely different numbers of molecules. This matters because reactions require molecules to meet in specific ratios.</p>
+              <div class="example-box">
+                <div class="example-label">Real example from the packet</div>
+                Adding 2 teaspoons of KOH to HCl gives more mass of product (KCl) than adding 2 teaspoons of LiOH — but the same number of molecules reacts in both cases. The mass difference comes from potassium being heavier than lithium, not from a difference in how many molecules reacted.
+              </div>
+              <p>This is why "looks can be deceiving" is a theme of the class. A scale tells you mass, but not how many molecules you have. Stoichiometry is the system chemists use to count molecules indirectly using mass.</p>
+            </div>
+          </div>
+          <div class="concept-block">
+            <div class="concept-title">What stoichiometry actually means</div>
+            <div class="concept-body">
+              <p>Stoichiometry is the practice of quantifying a chemical reaction — finding out how many grams, molecules, or moles of something are involved. It lets you predict how much product a reaction will produce before you even run it.</p>
+              <div class="tip-box">Think of it like the burger restaurant example: if you know a burger needs 2 buns, 1 patty, and 1 ketchup packet, and you have 12 buns, 4 patties, and 5 ketchup packets, you can figure out exactly how many burgers you can make. Chemistry is the same — you just can't see the "patties."</div>
+              <p>The key insight is that mass is a starting point, not an ending point. You weigh something to get started, then use math to find out what that mass actually means in terms of molecule count.</p>
+            </div>
+          </div>
+          <div class="concept-block">
+            <div class="concept-title">Four habits that prevent struggling</div>
+            <div class="concept-body">
+              <ul class="rule-list">
+                <li>Always write units next to every number — never write a bare number</li>
+                <li>Show your work — if you make a mistake, there must be a written trail to find it</li>
+                <li>Solve problems the way you were taught, not your own invented method</li>
+                <li>Avoid shortcuts until you fully understand the underlying concept</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div id="s12-sigfigs" class="topic-content">
+          <div class="concept-block">
+            <div class="concept-title">What significant figures actually are</div>
+            <div class="concept-body">
+              <p>When you measure something, you can only be as precise as your instrument allows. Significant figures (sig figs) are the digits in a number that actually carry meaningful precision — they tell the reader how carefully something was measured.</p>
+              <div class="example-box">
+                <div class="example-label">Why it matters</div>
+                If you measure a desk as "1 meter" vs "1.00 meters", those mean very different things. The first says you measured to the nearest meter. The second says you measured to the nearest centimeter. Sig figs communicate that difference.
+              </div>
+            </div>
+          </div>
+          <div class="concept-block">
+            <div class="concept-title">The four counting rules</div>
+            <div class="concept-body">
+              <ul class="rule-list">
+                <li>All non-zero digits are always significant (1–9 always count)</li>
+                <li>Zeros sandwiched between non-zero digits are always significant — e.g. 5004 has 4 sig figs</li>
+                <li>Leading zeros (zeros left of the first non-zero digit) are never significant — e.g. 0.0042 has 2 sig figs</li>
+                <li>Trailing zeros (zeros at the end) are significant only if a decimal point appears somewhere in the number</li>
+              </ul>
+              <div class="warning-box">The trailing zero rule is the most commonly missed. 1000 has 1 sig fig. 1000. has 4. 1000.00 has 6. The decimal point is the signal.</div>
+              <div class="table-wrap">
+                <table>
+                  <tr><th>Number</th><th>Sig figs</th><th>Reason</th></tr>
+                  <tr><td>0.0042</td><td>2</td><td>leading zeros don't count</td></tr>
+                  <tr><td>900</td><td>1</td><td>trailing zeros, no decimal</td></tr>
+                  <tr><td>900.</td><td>3</td><td>decimal present</td></tr>
+                  <tr><td>900.0</td><td>4</td><td>decimal + trailing zero counts</td></tr>
+                  <tr><td>5009</td><td>4</td><td>zero between digits counts</td></tr>
+                  <tr><td>0.0840</td><td>3</td><td>leading zeros don't count, trailing does</td></tr>
+                  <tr><td>1000</td><td>1</td><td>trailing zeros, no decimal</td></tr>
+                  <tr><td>1000.</td><td>4</td><td>decimal present</td></tr>
+                  <tr><td>270.</td><td>3</td><td>decimal present</td></tr>
+                  <tr><td>0.030900</td><td>5</td><td>leading zeros don't count, trailing zeros with decimal do</td></tr>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="concept-block">
+            <div class="concept-title">Rounding rules for calculations</div>
+            <div class="concept-body">
+              <p>For multiplication and division: your answer has the same number of sig figs as the input with the fewest sig figs.</p>
+              <div class="math-display">4.5 × 6.75 = 30.375 → rounds to 30 (limited by 4.5 which has 2 sig figs)</div>
+              <p>For addition and subtraction: your answer is limited to the least precise decimal place among all inputs — not the fewest sig figs.</p>
+              <div class="math-display">23,800 − 6,866 = 16,934 → rounds to 16,900 (limited by hundreds place of 23,800)</div>
+              <div class="warning-box">Never round intermediate answers — only round your final result. Rounding early compounds errors through every subsequent step.</div>
+              <p>Special rounding rule: when the deciding digit is exactly 5 with nothing after it, round to the even number. So 32.65 → 32.6 (6 is even), and 79.35 → 79.4 (4 is even).</p>
+            </div>
+          </div>
+        </div>
+
+        <div id="s12-scinotation" class="topic-content">
+          <div class="concept-block">
+            <div class="concept-title">What scientific notation is and why we use it</div>
+            <div class="concept-body">
+              <p>Scientific notation is a compact way of writing very large or very small numbers. In chemistry you constantly encounter numbers like Avogadro's number (602,214,150,000,000,000,000,000) or masses of individual atoms. Writing these out is impractical and error-prone.</p>
+              <p>The format is always: a number between 1 and 10, multiplied by a power of 10.</p>
+              <div class="math-display">6.022 × 10²³ means 6.022 with the decimal moved 23 places right</div>
+              <div class="math-display">4.7 × 10⁻⁸ means 4.7 with the decimal moved 8 places left</div>
+            </div>
+          </div>
+          <div class="concept-block">
+            <div class="concept-title">Converting to and from scientific notation</div>
+            <div class="concept-body">
+              <p>To convert a large number: move the decimal left until you have a number between 1 and 10. Count how many places you moved — that's your positive exponent.</p>
+              <div class="math-display">340,000,000 → 3.4 × 10⁸ (moved decimal 8 places left)</div>
+              <p>To convert a small number: move the decimal right until you have a number between 1 and 10. Count how many places — that's your negative exponent.</p>
+              <div class="math-display">0.000000047 → 4.7 × 10⁻⁸ (moved decimal 8 places right)</div>
+            </div>
+          </div>
+          <div class="concept-block">
+            <div class="concept-title">Calculating with scientific notation</div>
+            <div class="concept-body">
+              <p>Handle the numbers and the powers of 10 separately, then recombine.</p>
+              <div class="example-box">
+                <div class="example-label">Multiplication</div>
+                (4 × 10⁻²)(1.5 × 10⁹) → multiply 4 × 1.5 = 6, add exponents −2 + 9 = 7 → 6 × 10⁷
+              </div>
+              <div class="example-box">
+                <div class="example-label">Division</div>
+                (8.0 × 10³) ÷ (4.0 × 10⁻⁷) → divide 8.0 ÷ 4.0 = 2.0, subtract exponents 3 − (−7) = 10 → 2.0 × 10¹⁰
+              </div>
+              <div class="tip-box">After calculating, always check that your answer has a number between 1 and 10 out front. If you get 35.6 × 10³, convert it to 3.56 × 10⁴.</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="s12-ratios" class="topic-content">
+          <div class="concept-block">
+            <div class="concept-title">Fractions, ratios, decimals, and percents</div>
+            <div class="concept-body">
+              <p>These four representations all describe the same relationship between two numbers. Understanding how to move between them is essential because stoichiometry uses all four depending on context.</p>
+              <div class="table-wrap">
+                <table>
+                  <tr><th>Form</th><th>What it means</th><th>Example (6 out of 9)</th></tr>
+                  <tr><td>Division</td><td>the operation itself</td><td>6/9</td></tr>
+                  <tr><td>Fraction</td><td>simplified part/whole</td><td>2/3</td></tr>
+                  <tr><td>Ratio</td><td>part:part comparison</td><td>2:1</td></tr>
+                  <tr><td>Decimal</td><td>division carried out</td><td>0.667</td></tr>
+                  <tr><td>Percent</td><td>decimal × 100</td><td>66.7%</td></tr>
+                </table>
+              </div>
+              <div class="warning-box">Ratio vs fraction: a ratio (2:1) compares part to part, while a fraction (2/3) compares part to whole. The 6/9 example simplified to ratio 2:1 means for every 2 red socks there is 1 blue sock — the total (3) doesn't appear in the ratio itself.</div>
+            </div>
+          </div>
+          <div class="concept-block">
+            <div class="concept-title">Negative exponents and unit notation</div>
+            <div class="concept-body">
+              <p>A negative exponent means the unit is in the denominator. This appears constantly in chemistry with units like g/cm³ or m/s².</p>
+              <div class="math-display">10 kg × m⁻² is the same as 10 kg/m²</div>
+              <div class="math-display">25 m × s⁻² is the same as 25 m/s²</div>
+              <p>A slash and a negative exponent mean exactly the same thing. Your teacher may use either notation interchangeably.</p>
+            </div>
+          </div>
+        </div>
+
+        <div id="s12-mole" class="topic-content">
+          <div class="concept-block">
+            <div class="concept-title">What a mole actually is</div>
+            <div class="concept-body">
+              <p>A mole is simply a counting unit — like a dozen (12) or a gross (144), except the number is 6.022 × 10²³. Chemists use this specific number because it creates a convenient bridge between the microscopic world of atoms and the macroscopic world of grams you can measure in a lab.</p>
+              <div class="example-box">
+                <div class="example-label">The key equivalence</div>
+                1 mole = 6.022 × 10²³ particles (atoms, molecules, or ions)
+              </div>
+              <p>The number 6.022 × 10²³ is called Avogadro's number. It was chosen so that the atomic mass of any element in atomic mass units (amu) numerically equals its molar mass in grams. Carbon's atomic mass is 12 amu, so 1 mole of carbon atoms weighs exactly 12 grams.</p>
+              <div class="tip-box">Don't try to "feel" how large Avogadro's number is — it's essentially incomprehensible. Just treat it as a conversion factor, the same way you'd use 12 to convert dozens to individual items.</div>
+            </div>
+          </div>
+          <div class="concept-block">
+            <div class="concept-title">Three things a mole can equal</div>
+            <div class="concept-body">
+              <ul class="rule-list">
+                <li>1 mole = 6.022 × 10²³ particles (always true for any substance)</li>
+                <li>1 mole = molar mass in grams (depends on the substance — use the periodic table)</li>
+                <li>1 mole = 22.4 L of gas at STP (only for gases at standard temperature and pressure)</li>
+              </ul>
+              <div class="example-box">
+                <div class="example-label">Applied to iron (Fe) and oxygen gas (O₂)</div>
+                1 mole Fe = 6.022 × 10²³ atoms Fe = 55.9 g Fe<br>
+                1 mole O₂ = 6.022 × 10²³ molecules O₂ = 32 g O₂ = 22.4 L at STP
+              </div>
+              <div class="warning-box">Moles and molecules are not the same word — they look similar but mean completely different things. 1 mole contains 6.022 × 10²³ molecules. Never abbreviate "molecules" as "moles" in your written work.</div>
+            </div>
+          </div>
+          <div class="concept-block">
+            <div class="concept-title">Atomic weight vs atomic mass vs molar mass</div>
+            <div class="concept-body">
+              <div class="table-wrap">
+                <table>
+                  <tr><th>Term</th><th>Definition</th><th>Where to find it</th></tr>
+                  <tr><td>Atomic weight</td><td>average mass of one atom of an element, averaged across all naturally occurring isotopes</td><td>periodic table</td></tr>
+                  <tr><td>Atomic mass</td><td>mass of a specific isotope</td><td>given in a problem</td></tr>
+                  <tr><td>Molar mass</td><td>mass of one mole of a molecule, found by adding atomic weights</td><td>calculated from periodic table</td></tr>
+                </table>
+              </div>
+              <p>Your teacher often uses "atomic mass" for all three — that's fine for calculations. Just know the distinction exists.</p>
+            </div>
+          </div>
+        </div>
+
+        <div id="s12-molarmass" class="topic-content">
+          <div class="concept-block">
+            <div class="concept-title">How to calculate molar mass</div>
+            <div class="concept-body">
+              <p>Molar mass is the mass of one mole of a substance in grams. You calculate it by looking up each element's atomic weight on the periodic table, multiplying by how many atoms of that element appear in the formula, and adding everything up.</p>
+              <ol class="step-list">
+                <li>Identify every element in the formula</li>
+                <li>Count how many atoms of each element there are — watch out for subscripts and parentheses</li>
+                <li>Look up the atomic weight of each element on the periodic table</li>
+                <li>Multiply: (number of atoms) × (atomic weight) for each element</li>
+                <li>Add all results together — this is your molar mass in g/mol</li>
+              </ol>
+              <div class="example-box">
+                <div class="example-label">Example: H₃PO₄</div>
+                H: 3 atoms × 1.0 g/mol = 3.0<br>
+                P: 1 atom × 31.0 g/mol = 31.0<br>
+                O: 4 atoms × 16.0 g/mol = 64.0<br>
+                Total = 98.0 g/mol
+              </div>
+            </div>
+          </div>
+          <div class="concept-block">
+            <div class="concept-title">Handling parentheses in formulas</div>
+            <div class="concept-body">
+              <p>When a formula has parentheses with a subscript outside, everything inside the parentheses gets multiplied by that subscript. This is the most common place students make mistakes.</p>
+              <div class="example-box">
+                <div class="example-label">Example: (NH₄)₂SO₄</div>
+                The subscript 2 outside the parentheses multiplies everything inside:<br>
+                N: 1 × 2 = 2 atoms → 2 × 14.0 = 28.0<br>
+                H: 4 × 2 = 8 atoms → 8 × 1.0 = 8.0<br>
+                S: 1 atom → 1 × 32.1 = 32.1<br>
+                O: 4 atoms → 4 × 16.0 = 64.0<br>
+                Total = 132.1 g/mol
+              </div>
+              <div class="warning-box">Common mistake: treating (NO₃)₂ as 2 nitrogen and 2 oxygen. The correct count is 2 nitrogen and 6 oxygen — the subscript 2 multiplies both the N and the O₃.</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="s12-dimanalysis" class="topic-content">
+          <div class="concept-block">
+            <div class="concept-title">What dimensional analysis is</div>
+            <div class="concept-body">
+              <p>Dimensional analysis is a method of converting between units by multiplying by fractions called conversion factors. Each conversion factor equals exactly 1 — it's just a ratio of two equivalent quantities — so multiplying by it doesn't change the value, only the units.</p>
+              <div class="example-box">
+                <div class="example-label">The core template</div>
+                Known quantity × (conversion factor 1) × (conversion factor 2) = desired quantity<br><br>
+                Unit A × (Unit B / Unit A) × (Unit C / Unit B) = Unit C
+              </div>
+              <p>The key is that units cancel just like numbers in fractions. If the same unit appears in both a numerator and a denominator, it cancels out. You keep doing this until only your desired unit remains.</p>
+            </div>
+          </div>
+          <div class="concept-block">
+            <div class="concept-title">Equivalence statements and conversion factors</div>
+            <div class="concept-body">
+              <p>An equivalence statement says two different-looking quantities are equal: 1 minute = 60 seconds. From any equivalence statement you can make two conversion factors — one for each direction of conversion.</p>
+              <div class="example-box">
+                <div class="example-label">From "1 minute = 60 seconds"</div>
+                Conversion factor 1: (1 min / 60 sec) — use this to convert seconds to minutes<br>
+                Conversion factor 2: (60 sec / 1 min) — use this to convert minutes to seconds
+              </div>
+              <p>Which one you use depends entirely on which unit you want to cancel. The unit you're converting FROM must appear in the denominator of your conversion factor so it cancels out.</p>
+              <div class="warning-box">If you set up the conversion factor the wrong way, your units won't cancel and you'll get a nonsensical answer. Always check that the unit you started with disappears before moving on.</div>
+            </div>
+          </div>
+          <div class="concept-block">
+            <div class="concept-title">Multi-step dimensional analysis</div>
+            <div class="concept-body">
+              <p>Some conversions require chaining multiple conversion factors together. The unit cancellation tells you what to do at each step.</p>
+              <div class="example-box">
+                <div class="example-label">Converting 2778 miles to days of driving at 70 mph, 6 hours/day</div>
+                2778 miles × (1 hr / 70 miles) × (1 day / 6 hrs) = 6.6 days<br><br>
+                Miles cancel with miles, hours cancel with hours, leaving days.
+              </div>
+              <div class="tip-box">Before calculating, write out the full chain of units and check they cancel properly. This is faster than recalculating a wrong answer.</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="s12-conversions" class="topic-content">
+          <div class="concept-block">
+            <div class="concept-title">The mole island diagram — your roadmap</div>
+            <div class="concept-body">
+              <p>Every mole conversion problem can be mapped onto the mole island diagram. Moles always sit at the center. Every other quantity — mass, particles, volume — connects to moles through a specific conversion factor. You can never skip moles and go directly from one outer quantity to another.</p>
+              <div class="table-wrap">
+                <table>
+                  <tr><th>Converting between</th><th>Conversion factor to use</th></tr>
+                  <tr><td>Mass ↔ Moles</td><td>molar mass (g/mol) from periodic table</td></tr>
+                  <tr><td>Particles ↔ Moles</td><td>Avogadro's number (6.022 × 10²³ particles/mol)</td></tr>
+                  <tr><td>Volume ↔ Moles (gases only at STP)</td><td>22.4 L/mol</td></tr>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="concept-block">
+            <div class="concept-title">Grams to moles</div>
+            <div class="concept-body">
+              <p>Use the molar mass as your conversion factor, with grams in the denominator so they cancel.</p>
+              <div class="math-display">50 g Br₂ × (1 mol Br₂ / 160 g Br₂) = 0.31 mol Br₂</div>
+              <p>The molar mass of Br₂ is 160 g/mol because each bromine atom is 80 g/mol and there are two of them.</p>
+            </div>
+          </div>
+          <div class="concept-block">
+            <div class="concept-title">Moles to grams</div>
+            <div class="concept-body">
+              <p>Flip the conversion factor — put moles in the denominator and grams in the numerator.</p>
+              <div class="math-display">2.4 mol S × (32 g S / 1 mol S) = 76.8 g S</div>
+            </div>
+          </div>
+          <div class="concept-block">
+            <div class="concept-title">Grams to molecules (two-step)</div>
+            <div class="concept-body">
+              <p>You must go through moles — you can't convert grams directly to molecules. This requires two conversion factors chained together.</p>
+              <div class="math-display">3 g NaCl × (1 mol NaCl / 58.5 g NaCl) × (6.022 × 10²³ molecules / 1 mol) = 3.09 × 10²² molecules</div>
+              <ol class="step-list">
+                <li>Convert grams to moles using molar mass</li>
+                <li>Convert moles to molecules using Avogadro's number</li>
+              </ol>
+            </div>
+          </div>
+          <div class="concept-block">
+            <div class="concept-title">Counting specific atoms within molecules</div>
+            <div class="concept-body">
+              <p>Add one more conversion factor at the end using the atom count from the formula.</p>
+              <div class="math-display">1.2 g aspartame (C₁₄H₁₈N₂O₅) × (1 mol / 294 g) × (6.022×10²³ / 1 mol) × (2 atoms N / 1 molecule) = 4.9 × 10²¹ atoms N</div>
+              <p>The (2 atoms N / 1 molecule) comes from the subscript on N in the formula — there are 2 nitrogen atoms in every molecule of aspartame.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- FLASHCARDS MODE -->
+    <div id="s12-flashcards" class="mode-panel" style="display:none">
+      <div class="flashcard-area">
+        <div class="fc-controls">
+          <label>Topic:</label>
+          <select id="s12-fc-topic" onchange="initFlashcards('s12')">
+            <option value="all">All topics</option>
+            <option value="sigfigs">Significant figures</option>
+            <option value="scinotation">Scientific notation</option>
+            <option value="mole">The mole</option>
+            <option value="molarmass">Molar mass</option>
+            <option value="dimanalysis">Dimensional analysis</option>
+            <option value="conversions">Mole conversions</option>
+          </select>
+          <span class="fc-count" id="s12-fc-count">Card 1 of 1</span>
+        </div>
+        <div class="fc-progress"><div class="fc-progress-bar" id="s12-fc-bar" style="width:0%"></div></div>
+        <div class="flashcard" id="s12-fc-card" onclick="flipCard('s12')">
+          <span class="fc-tag" id="s12-fc-tag">Topic</span>
+          <div class="fc-question" id="s12-fc-q">Loading...</div>
+          <div class="fc-answer" id="s12-fc-a">Loading...</div>
+          <span class="fc-flip-hint">click to flip</span>
+        </div>
+        <div class="fc-nav">
+          <button class="fc-nav-btn" onclick="prevCard('s12')" id="s12-fc-prev">← Previous</button>
+          <div class="fc-result-btns" id="s12-fc-results" style="display:none">
+            <button class="fc-btn-hard" onclick="markCard('s12','hard')">Still learning</button>
+            <button class="fc-btn-got" onclick="markCard('s12','got')">Got it</button>
+          </div>
+          <button class="fc-nav-btn" onclick="nextCard('s12')" id="s12-fc-next">Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUIZ MODE -->
+    <div id="s12-quiz" class="mode-panel" style="display:none">
+      <div class="quiz-area">
+        <div class="quiz-controls">
+          <label style="font-size:13px;color:#666;">Topic:</label>
+          <select id="s12-quiz-topic">
+            <option value="all">All topics</option>
+            <option value="sigfigs">Significant figures</option>
+            <option value="scinotation">Scientific notation</option>
+            <option value="mole">The mole</option>
+            <option value="molarmass">Molar mass</option>
+            <option value="dimanalysis">Dimensional analysis</option>
+            <option value="conversions">Mole conversions</option>
+          </select>
+          <button class="quiz-start-btn" onclick="startQuiz('s12')">Start Quiz</button>
+        </div>
+        <div id="s12-quiz-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 4 ===== -->
+  <div id="s4" class="section">
+    <p class="section-desc">Pages 50–68 · Stoichiometry, mole ratios, balancing equations, mass-to-mass calculations</p>
+
+    <div class="mode-tabs">
+      <button class="mode-btn active" onclick="showMode('s4','notes',this)">Notes</button>
+      <button class="mode-btn" onclick="showMode('s4','flashcards',this)">Flashcards</button>
+      <button class="mode-btn" onclick="showMode('s4','quiz',this)">Practice Quiz</button>
+    </div>
+
+    <!-- NOTES MODE -->
+    <div id="s4-notes" class="mode-panel">
+      <div class="topic-grid">
+        <button class="topic-btn active" onclick="showTopic('s4','overview',this)"><div class="topic-label">Notes 4</div><div class="topic-title">What stoichiometry does</div></button>
+        <button class="topic-btn" onclick="showTopic('s4','balancing',this)"><div class="topic-label">Step A</div><div class="topic-title">Balancing equations</div></button>
+        <button class="topic-btn" onclick="showTopic('s4','moleratios',this)"><div class="topic-label">Step B</div><div class="topic-title">Mole ratios</div></button>
+        <button class="topic-btn" onclick="showTopic('s4','setup',this)"><div class="topic-label">Step C</div><div class="topic-title">Full problem setup</div></button>
+        <button class="topic-btn" onclick="showTopic('s4','molemole',this)"><div class="topic-label">Practice 4D</div><div class="topic-title">Mole to mole</div></button>
+        <button class="topic-btn" onclick="showTopic('s4','massmass',this)"><div class="topic-label">Practice 4E</div><div class="topic-title">Mass to mass</div></button>
+        <button class="topic-btn" onclick="showTopic('s4','errors',this)"><div class="topic-label">Key concepts</div><div class="topic-title">Common mistakes</div></button>
+      </div>
+      <div class="content-area">
+
+        <div id="s4-overview" class="topic-content active">
+          <div class="concept-block">
+            <div class="concept-title">What stoichiometry lets you do</div>
+            <div class="concept-body">
+              <p>Stoichiometry lets you predict how much product a reaction will make before you run it, and figure out how much reactant you need to make a specific amount of product. Without it, you'd have to run every reaction by trial and error.</p>
+              <div class="example-box">
+                <div class="example-label">A real stoichiometry question</div>
+                You have 5 grams of silver nitrate (AgNO₃). You add it to sodium carbonate. How many grams of silver carbonate (Ag₂CO₃) will form? This is unanswerable without stoichiometry — weighing the reactant alone can't tell you the product mass.
+              </div>
+              <p>The reason you can't go directly from grams of reactant to grams of product is that different substances have different molar masses. You can only compare substances meaningfully in units of moles — then convert back to grams at the end.</p>
+            </div>
+          </div>
+          <div class="concept-block">
+            <div class="concept-title">The three steps — always in this order</div>
+            <div class="concept-body">
+              <ol class="step-list">
+                <li>Balance the chemical equation</li>
+                <li>Extract mole ratios from the coefficients of the balanced equation</li>
+                <li>Use dimensional analysis with those mole ratios to convert from what you know to what you want</li>
+              </ol>
+              <div class="warning-box">If you skip step 1 and use an unbalanced equation, your mole ratios will be wrong, and everything downstream will be wrong. Always balance first, no exceptions.</div>
+            </div>
+          </div>
+          <div class="concept-block">
+            <div class="concept-title">The molar map pathway</div>
+            <div class="concept-body">
+              <p>For any mass-to-mass stoichiometry problem, you always follow this exact path:</p>
+              <div class="math-display">grams A → moles A → moles B → grams B</div>
+              <p>This requires exactly three conversion factors:</p>
+              <ul class="rule-list">
+                <li>Molar mass of A (to go from grams A to moles A)</li>
+                <li>Mole ratio from the balanced equation (to go from moles A to moles B)</li>
+                <li>Molar mass of B (to go from moles B to grams B)</li>
+              </ul>
+              <div class="tip-box">The mole ratio in the middle is what makes this chemistry rather than just unit conversion — it encodes the actual chemical relationship between the two substances.</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="s4-balancing" class="topic-content">
+          <div class="concept-block">
+            <div class="concept-title">Why equations must be balanced</div>
+            <div class="concept-body">
+              <p>The law of conservation of mass says atoms cannot be created or destroyed in a chemical reaction. A balanced equation has the same number of each type of atom on both sides of the arrow.</p>
+              <div class="example-box">
+                <div class="example-label">Unbalanced vs balanced</div>
+                Unbalanced: FeS + O₂ → Fe₂O₃ + SO₂<br>
+                (1 Fe on left, 2 on right — violates conservation of mass)<br><br>
+                Balanced: 4FeS + 7O₂ → 2Fe₂O₃ + 4SO₂<br>
+                (4 Fe, 4 S, 14 O on each side — conserved)
+              </div>
+            </div>
+          </div>
+          <div class="concept-block">
+            <div class="concept-title">How to balance an equation</div>
+            <div class="concept-body">
+              <ol class="step-list">
+                <li>Write out the unbalanced equation with correct formulas for all substances</li>
+                <li>Count atoms of each element on both sides — make a tally table</li>
+                <li>Add coefficients (the big numbers in front of formulas) to make counts equal</li>
+                <li>Start with the most complex molecule, balance metals first, then non-metals, then H and O last</li>
+                <li>Recount everything to verify — both sides must match</li>
+              </ol>
+              <div class="warning-box">You can only change coefficients — never change the subscripts inside a chemical formula. Changing H₂O to H₃O changes the substance entirely. Only the coefficient in front can change.</div>
+              <div class="example-box">
+                <div class="example-label">Example: Al + HCl → AlCl₃ + H₂</div>
+                Tally: 1 Al, 1 H, 1 Cl on left; 1 Al, 3 Cl, 2 H on right<br>
+                Need 3 Cl on left → use 3HCl → now 3 H on left<br>
+                Need even H: 3 vs 2 — multiply by 2 throughout:<br>
+                2Al + 6HCl → 2AlCl₃ + 3H₂ ✓<br>
+                Check: 2 Al, 6 H, 6 Cl on each side ✓
+              </div>
+              <div class="tip-box">If you end up needing a fractional coefficient (like 3/2 O₂), multiply every coefficient in the equation by the denominator to get whole numbers throughout.</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="s4-moleratios" class="topic-content">
+          <div class="concept-block">
+            <div class="concept-title">What a mole ratio is</div>
+            <div class="concept-body">
+              <p>A mole ratio is a conversion factor that comes from the coefficients of a balanced chemical equation. It tells you exactly how many moles of one substance relate to how many moles of another substance in that reaction.</p>
+              <div class="example-box">
+                <div class="example-label">From: 4FeS + 7O₂ → 2Fe₂O₃ + 4SO₂</div>
+                The coefficients 4, 7, 2, 4 tell you:<br>
+                4 moles FeS reacts with 7 moles O₂<br>
+                4 moles FeS produces 2 moles Fe₂O₃<br>
+                4 moles FeS produces 4 moles SO₂<br>
+                All other ratios can be derived from these using the same logic as equivalent fractions.
+              </div>
+            </div>
+          </div>
+          <div class="concept-block">
+            <div class="concept-title">Writing mole ratios as conversion factors</div>
+            <div class="concept-body">
+              <p>Each equivalence statement from the equation gives two conversion factors — one for each direction. Choose the one that cancels the unit you currently have.</p>
+              <div class="example-box">
+                <div class="example-label">From "4 mol FeS = 7 mol O₂"</div>
+                Conversion factor 1: (4 mol FeS / 7 mol O₂) — use when you have O₂ and want FeS<br>
+                Conversion factor 2: (7 mol O₂ / 4 mol FeS) — use when you have FeS and want O₂
+              </div>
+              <div class="tip-box">You only need to write the ratios involving your specific given and desired substances. All other ratios are derivable mathematically — if A=B and A=C, then B=C.</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="s4-setup" class="topic-content">
+          <div class="concept-block">
+            <div class="concept-title">The full problem setup</div>
+            <div class="concept-body">
+              <p>Every stoichiometry problem follows the same structure. The only things that change are the specific molar masses and the mole ratio from the balanced equation.</p>
+              <ol class="step-list">
+                <li>Identify what you're given (mass of A) and what you want (mass or moles of B)</li>
+                <li>Balance the equation</li>
+                <li>Calculate molar mass of A and B from the periodic table</li>
+                <li>Write the mole ratio connecting A to B from the balanced equation</li>
+                <li>Set up the dimensional analysis chain and verify units cancel</li>
+                <li>Calculate and include units in your answer</li>
+                <li>Write a verbal statement of the result</li>
+              </ol>
+            </div>
+          </div>
+          <div class="concept-block">
+            <div class="concept-title">Full worked example</div>
+            <div class="concept-body">
+              <p>5 grams AgNO₃ + Na₂CO₃ → ? grams Ag₂CO₃</p>
+              <div class="example-box">
+                <div class="example-label">Step 1: balance</div>
+                2AgNO₃ + Na₂CO₃ → Ag₂CO₃ + 2NaNO₃
+              </div>
+              <div class="example-box">
+                <div class="example-label">Step 2: molar masses</div>
+                AgNO₃: 108 + 14 + 48 = 170 g/mol<br>
+                Ag₂CO₃: 216 + 12 + 48 = 276 g/mol
+              </div>
+              <div class="example-box">
+                <div class="example-label">Step 3: mole ratio from balanced equation</div>
+                2 mol AgNO₃ = 1 mol Ag₂CO₃
+              </div>
+              <div class="example-box">
+                <div class="example-label">Step 4: dimensional analysis</div>
+                5 g AgNO₃ × (1 mol AgNO₃ / 170 g) × (1 mol Ag₂CO₃ / 2 mol AgNO₃) × (276 g / 1 mol Ag₂CO₃) = 4.06 g Ag₂CO₃
+              </div>
+              <div class="example-box">
+                <div class="example-label">Step 5: unit check</div>
+                g AgNO₃ cancels, mol AgNO₃ cancels, mol Ag₂CO₃ cancels — leaving g Ag₂CO₃ ✓
+              </div>
+            </div>
+          </div>
+          <div class="concept-block">
+            <div class="concept-title">The equivalence statements you always need</div>
+            <div class="concept-body">
+              <div class="table-wrap">
+                <table>
+                  <tr><th>Conversion needed</th><th>Equivalence statement</th></tr>
+                  <tr><td>grams A → moles A</td><td>1 mol A = (molar mass) g A</td></tr>
+                  <tr><td>moles A → moles B</td><td>(coeff A) mol A = (coeff B) mol B</td></tr>
+                  <tr><td>moles B → grams B</td><td>1 mol B = (molar mass) g B</td></tr>
+                  <tr><td>moles → molecules</td><td>1 mol = 6.022 × 10²³ molecules</td></tr>
+                  <tr><td>moles → volume (gas at STP)</td><td>1 mol = 22.4 L</td></tr>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="s4-molemole" class="topic-content">
+          <div class="concept-block">
+            <div class="concept-title">Mole to mole problems — the simplest type</div>
+            <div class="concept-body">
+              <p>A mole-to-mole problem gives you moles of one substance and asks for moles of another. Since you're already in moles, you only need the mole ratio — no molar mass conversions required.</p>
+              <div class="math-display">moles A × (coeff B mol B / coeff A mol A) = moles B</div>
+              <div class="example-box">
+                <div class="example-label">Example: C₃H₈ + 5O₂ → 3CO₂ + 4H₂O — how many moles O₂ from 3 mol C₃H₈?</div>
+                3 mol C₃H₈ × (5 mol O₂ / 1 mol C₃H₈) = 15 mol O₂
+              </div>
+            </div>
+          </div>
+          <div class="concept-block">
+            <div class="concept-title">Balancing equations that need fractional coefficients</div>
+            <div class="concept-body">
+              <p>Some equations give you fractional coefficients as an intermediate step. Multiply everything by the denominator to restore whole numbers.</p>
+              <div class="example-box">
+                <div class="example-label">Example: Fe + O₂ → Fe₂O₃</div>
+                Fe: need 2Fe for 1Fe₂O₃<br>
+                O: need 3O, so 3/2 O₂ → 2Fe + 3/2 O₂ → Fe₂O₃ (has fraction)<br>
+                Multiply everything by 2: 4Fe + 3O₂ → 2Fe₂O₃ ✓
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="s4-massmass" class="topic-content">
+          <div class="concept-block">
+            <div class="concept-title">Mass to mass problems — the full chain</div>
+            <div class="concept-body">
+              <p>Mass-to-mass problems are the most complete type. You're given grams of one substance and want grams of another. You need all three conversion factors chained together.</p>
+              <div class="math-display">g A × (1 mol A / MM_A) × (coeff B / coeff A) × (MM_B / 1 mol B) = g B</div>
+            </div>
+          </div>
+          <div class="concept-block">
+            <div class="concept-title">Full worked example</div>
+            <div class="concept-body">
+              <div class="example-box">
+                <div class="example-label">H₂ + O₂ → H₂O: how many grams of water from 24 g oxygen?</div>
+                Balance: 2H₂ + O₂ → 2H₂O<br><br>
+                Molar masses: O₂ = 32 g/mol, H₂O = 18 g/mol<br>
+                Mole ratio: 1 mol O₂ = 2 mol H₂O<br><br>
+                24 g O₂ × (1 mol O₂ / 32 g O₂) × (2 mol H₂O / 1 mol O₂) × (18 g H₂O / 1 mol H₂O) = 27 g H₂O
+              </div>
+              <div class="tip-box">Always do a sanity check — does the answer make physical sense? Water (18 g/mol) is lighter than O₂ (32 g/mol), but we get more moles of water (2 for every 1 O₂), so 27g from 24g of oxygen is plausible.</div>
+            </div>
+          </div>
+          <div class="concept-block">
+            <div class="concept-title">When the answer asks for molecules instead of grams</div>
+            <div class="concept-body">
+              <p>Just add one more conversion factor at the end using Avogadro's number. The rest of the setup is identical.</p>
+              <div class="math-display">...× (6.022 × 10²³ molecules / 1 mol) = molecules of product</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="s4-errors" class="topic-content">
+          <div class="concept-block">
+            <div class="concept-title">The most common mistakes in stoichiometry</div>
+            <div class="concept-body">
+              <ul class="rule-list">
+                <li>Using an unbalanced equation — always balance before extracting mole ratios</li>
+                <li>Flipping a conversion factor — if your units don't cancel, the fraction is upside down</li>
+                <li>Rounding intermediate answers — carry full precision until the final step only</li>
+                <li>Forgetting to include units — a number without a unit is meaningless and unverifiable</li>
+                <li>Using the wrong molar mass — always recheck your periodic table values and atom counts</li>
+                <li>Mishandling parentheses in formulas — (NO₃)₂ has 2 N and 6 O, not 2 N and 2 O</li>
+              </ul>
+            </div>
+          </div>
+          <div class="concept-block">
+            <div class="concept-title">How to self-check your dimensional analysis</div>
+            <div class="concept-body">
+              <ol class="step-list">
+                <li>Write out every unit explicitly — don't skip any</li>
+                <li>Cross out every unit that appears in both a numerator and denominator</li>
+                <li>Check that the only unit remaining is the one you wanted</li>
+                <li>If any unwanted unit survives, find the conversion factor containing it and flip it</li>
+              </ol>
+              <div class="tip-box">This unit cancellation check is the single most powerful error-detection tool in the entire unit. If your units work out, your setup is almost certainly correct. If they don't, something is wrong regardless of what your calculator says.</div>
+            </div>
+          </div>
+          <div class="concept-block">
+            <div class="concept-title">The Flight 143 lesson</div>
+            <div class="concept-body">
+              <p>A real Air Canada plane ran out of fuel mid-flight in 1983 because ground crew used the wrong density units. They used lb/L instead of kg/L, making the fuel appear 2.2 times more plentiful than it was.</p>
+              <p>If they had written out their units and checked that they cancelled properly, the error would have been immediately obvious — multiplying liters by lb/L gives pounds, not kilograms, which should have been a red flag.</p>
+              <div class="warning-box">This is the real-world version of "always write your units." The habit exists precisely because errors like this are invisible without it.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- FLASHCARDS MODE -->
+    <div id="s4-flashcards" class="mode-panel" style="display:none">
+      <div class="flashcard-area">
+        <div class="fc-controls">
+          <label>Topic:</label>
+          <select id="s4-fc-topic" onchange="initFlashcards('s4')">
+            <option value="all">All topics</option>
+            <option value="balancing">Balancing equations</option>
+            <option value="moleratios">Mole ratios</option>
+            <option value="setup">Full problem setup</option>
+            <option value="massmass">Mass to mass</option>
+          </select>
+          <span class="fc-count" id="s4-fc-count">Card 1 of 1</span>
+        </div>
+        <div class="fc-progress"><div class="fc-progress-bar" id="s4-fc-bar" style="width:0%"></div></div>
+        <div class="flashcard" id="s4-fc-card" onclick="flipCard('s4')">
+          <span class="fc-tag" id="s4-fc-tag">Topic</span>
+          <div class="fc-question" id="s4-fc-q">Loading...</div>
+          <div class="fc-answer" id="s4-fc-a">Loading...</div>
+          <span class="fc-flip-hint">click to flip</span>
+        </div>
+        <div class="fc-nav">
+          <button class="fc-nav-btn" onclick="prevCard('s4')" id="s4-fc-prev">← Previous</button>
+          <div class="fc-result-btns" id="s4-fc-results" style="display:none">
+            <button class="fc-btn-hard" onclick="markCard('s4','hard')">Still learning</button>
+            <button class="fc-btn-got" onclick="markCard('s4','got')">Got it</button>
+          </div>
+          <button class="fc-nav-btn" onclick="nextCard('s4')" id="s4-fc-next">Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUIZ MODE -->
+    <div id="s4-quiz" class="mode-panel" style="display:none">
+      <div class="quiz-area">
+        <div class="quiz-controls">
+          <label style="font-size:13px;color:#666;">Topic:</label>
+          <select id="s4-quiz-topic">
+            <option value="all">All topics</option>
+            <option value="balancing">Balancing equations</option>
+            <option value="moleratios">Mole ratios</option>
+            <option value="setup">Problem setup</option>
+            <option value="massmass">Mass to mass</option>
+          </select>
+          <button class="quiz-start-btn" onclick="startQuiz('s4')">Start Quiz</button>
+        </div>
+        <div id="s4-quiz-content"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== FLASHCARD DATA =====
+var allCards = {
+  s12: {
+    sigfigs: [
+      { q: "How many significant figures does 0.00420 have?", a: "3 sig figs. The leading zeros are just placeholders and don't count. The 4 and 2 count, and the trailing zero counts because a decimal point is present in the number.", tag: "Sig figs" },
+      { q: "How many significant figures does 1000 have? What about 1000.?", a: "1000 has 1 sig fig — no decimal point, so trailing zeros don't count. 1000. has 4 sig figs — the decimal point makes all trailing zeros significant.", tag: "Sig figs" },
+      { q: "You multiply 4.5 × 6.75. How many sig figs should your answer have and why?", a: "2 sig figs, because 4.5 has only 2 sig figs and that's the least precise value. 4.5 × 6.75 = 30.375, which rounds to 30.", tag: "Sig figs" },
+      { q: "What is the rule for sig figs in addition and subtraction?", a: "Your answer is limited to the least precise decimal place, not the fewest sig figs. Example: 23,800 − 6,866 = 16,934 → rounds to 16,900 because 23,800 is only reliable to the hundreds place.", tag: "Sig figs" },
+      { q: "When rounding 32.65 to 4 sig figs, do you round up to 32.7 or keep 32.6?", a: "You keep 32.6. The deciding digit is exactly 5 with nothing after it, so you round to the even number. 6 is already even, so you round down.", tag: "Sig figs" },
+      { q: "How many sig figs does 800.01 have?", a: "5 sig figs. All the zeros between 8 and 1 are sandwiched between non-zero digits, so they all count.", tag: "Sig figs" },
+      { q: "Why should you never round intermediate answers in a multi-step calculation?", a: "Rounding early introduces error that gets multiplied and amplified through every subsequent step. Always carry full precision through the calculation and only round the final answer.", tag: "Sig figs" }
+    ],
+    scinotation: [
+      { q: "Write 340,000,000 in scientific notation.", a: "3.4 × 10⁸. Move the decimal 8 places to the left to get a number between 1 and 10, giving a positive exponent of 8.", tag: "Sci notation" },
+      { q: "Write 0.000000047 in scientific notation.", a: "4.7 × 10⁻⁸. Move the decimal 8 places to the right to get 4.7, giving a negative exponent of −8.", tag: "Sci notation" },
+      { q: "Calculate (4 × 10⁻²)(1.5 × 10⁹).", a: "6 × 10⁷. Multiply the numbers: 4 × 1.5 = 6. Add the exponents: −2 + 9 = 7.", tag: "Sci notation" },
+      { q: "Calculate (8.0 × 10³) ÷ (4.0 × 10⁻⁷).", a: "2.0 × 10¹⁰. Divide the numbers: 8.0 ÷ 4.0 = 2.0. Subtract the exponents: 3 − (−7) = 10.", tag: "Sci notation" },
+      { q: "You calculate 35.6 × 10³. Is this proper scientific notation? If not, correct it.", a: "No — the number in front must be between 1 and 10. Move the decimal one place left and increase the exponent by 1: 3.56 × 10⁴.", tag: "Sci notation" },
+      { q: "Write 5.990 × 10⁻³ in long form.", a: "0.005990. Move the decimal 3 places to the left. Note the trailing zero is kept because it was significant in the original number.", tag: "Sci notation" }
+    ],
+    mole: [
+      { q: "What is a mole? Why do chemists use it?", a: "A mole is a counting unit equal to 6.022 × 10²³ particles. Chemists use it because it creates a convenient bridge between atom-scale masses (in amu) and lab-scale masses (in grams) — numerically they match.", tag: "The mole" },
+      { q: "What are the three things that 1 mole can equal?", a: "1 mole = 6.022 × 10²³ particles (always). 1 mole = molar mass in grams (depends on the substance). 1 mole = 22.4 L of a gas at STP (gases only).", tag: "The mole" },
+      { q: "What is the difference between moles and molecules?", a: "Molecules refers to individual particles. Moles is a quantity of particles — 1 mole contains 6.022 × 10²³ molecules. They are completely different things that just look similar as words.", tag: "The mole" },
+      { q: "Carbon has an atomic mass of 12 amu. What does 1 mole of carbon weigh?", a: "12 grams. This is the whole point of Avogadro's number — it was chosen specifically so that the atomic mass in amu numerically equals the molar mass in grams.", tag: "The mole" },
+      { q: "What is Avogadro's number?", a: "6.022 × 10²³. It is the number of particles in one mole of any substance. It was defined as the number of carbon-12 atoms in exactly 12 grams of carbon-12.", tag: "The mole" },
+      { q: "What is the difference between atomic weight and molar mass?", a: "Atomic weight is the average mass of one atom of a single element (found on the periodic table). Molar mass is the mass of one mole of a molecule, calculated by adding atomic weights together.", tag: "The mole" }
+    ],
+    molarmass: [
+      { q: "What is the molar mass of H₂O?", a: "18 g/mol. H: 2 × 1.0 = 2.0, O: 1 × 16.0 = 16.0. Total = 18.0 g/mol.", tag: "Molar mass" },
+      { q: "What is the molar mass of KOH?", a: "56.1 g/mol. K: 39.1, O: 16.0, H: 1.0. Total = 56.1 g/mol.", tag: "Molar mass" },
+      { q: "What is the molar mass of (NH₄)₂SO₄?", a: "132.1 g/mol. N: 14.0 × 2 = 28.0, H: 1.0 × 8 = 8.0, S: 32.1, O: 16.0 × 4 = 64.0. Total = 132.1 g/mol. Remember the subscript 2 outside the parentheses multiplies everything inside.", tag: "Molar mass" },
+      { q: "How many atoms of oxygen are in Pb(NO₃)₂?", a: "6 oxygen atoms. The subscript 2 outside the parentheses multiplies the NO₃ group — giving 2 N and 2 × 3 = 6 O atoms.", tag: "Molar mass" },
+      { q: "What is the molar mass of BF₃?", a: "67.8 g/mol. B: 10.8, F: 19.0 × 3 = 57.0. Total = 67.8 g/mol.", tag: "Molar mass" },
+      { q: "What is the molar mass of Cl₂?", a: "71 g/mol. Cl: 35.5 × 2 = 71. Chlorine is diatomic, so you need 2 atoms.", tag: "Molar mass" }
+    ],
+    dimanalysis: [
+      { q: "What is dimensional analysis and what is it used for?", a: "Dimensional analysis is a unit conversion method. You multiply by conversion factors (fractions equal to 1) so that unwanted units cancel out, leaving only the unit you want.", tag: "Dim. analysis" },
+      { q: "What is an equivalence statement? Give an example.", a: "An equivalence statement says two different-looking quantities are equal. Example: 1 minute = 60 seconds, or 1 mole = 6.022 × 10²³ particles. Each one gives you two conversion factors.", tag: "Dim. analysis" },
+      { q: "You want to convert 45 minutes into hours. Which conversion factor do you use: (60 min / 1 hr) or (1 hr / 60 min)?", a: "(1 hr / 60 min). You want to cancel minutes, so minutes must be in the denominator. 45 min × (1 hr / 60 min) = 0.75 hr.", tag: "Dim. analysis" },
+      { q: "How do you know if you set up a conversion factor the wrong way?", a: "The units won't cancel. If you end up with the wrong unit in your answer (or the unit you started with is still there), flip your conversion factor. The math will also give a nonsensical answer.", tag: "Dim. analysis" },
+      { q: "Convert 8000 mm to meters using dimensional analysis. Show the setup.", a: "8000 mm × (1 cm / 10 mm) × (1 m / 100 cm) = 8 m. Or more directly: 8000 mm × (1 m / 1000 mm) = 8 m.", tag: "Dim. analysis" },
+      { q: "What is the Flight 143 lesson about dimensional analysis?", a: "A 1983 Air Canada flight ran out of fuel because crew used lb/L instead of kg/L for fuel density. If they had written units and checked cancellation, multiplying liters by lb/L gives pounds, not kg — an obvious red flag.", tag: "Dim. analysis" }
+    ],
+    conversions: [
+      { q: "Convert 50 g of Br₂ to moles. (Molar mass of Br₂ = 160 g/mol)", a: "0.31 mol Br₂. Setup: 50 g Br₂ × (1 mol Br₂ / 160 g Br₂) = 0.3125 mol, rounds to 0.31 mol.", tag: "Mole conversions" },
+      { q: "Convert 2.4 mol of sulfur to grams. (Atomic mass of S = 32 g/mol)", a: "76.8 g S. Setup: 2.4 mol S × (32 g S / 1 mol S) = 76.8 g.", tag: "Mole conversions" },
+      { q: "How many molecules are in 3 g of NaCl? (Molar mass NaCl = 58.5 g/mol)", a: "3.09 × 10²² molecules. Setup: 3 g × (1 mol / 58.5 g) × (6.022 × 10²³ / 1 mol) = 3.09 × 10²² molecules.", tag: "Mole conversions" },
+      { q: "Why can't you convert grams directly to molecules without going through moles?", a: "Because there is no direct conversion factor between grams and molecules — different substances have different molar masses, so the same mass contains different numbers of molecules. Moles is the bridge that accounts for this.", tag: "Mole conversions" },
+      { q: "How many liters does 0.030 moles of a gas occupy at STP?", a: "0.672 L. Setup: 0.030 mol × (22.4 L / 1 mol) = 0.672 L.", tag: "Mole conversions" },
+      { q: "How many atoms of nitrogen are in 1.2 g of aspartame (C₁₄H₁₈N₂O₅, molar mass 294 g/mol)?", a: "4.9 × 10²¹ atoms N. Setup: 1.2 g × (1 mol / 294 g) × (6.022 × 10²³ molecules / 1 mol) × (2 atoms N / 1 molecule) = 4.9 × 10²¹.", tag: "Mole conversions" },
+      { q: "Convert 22 g of argon to moles. (Atomic mass of Ar = 39.9 g/mol)", a: "0.55 mol Ar. Setup: 22 g × (1 mol / 39.9 g) = 0.551 mol, rounds to 0.55 mol (2 sig figs from 22 g).", tag: "Mole conversions" }
+    ],
+    why: [
+      { q: "Why is mass alone insufficient for predicting the outcome of a chemical reaction?", a: "Because reactions occur between molecules in fixed ratios, not grams. The same mass of two different substances can contain very different numbers of molecules, so mass doesn't tell you how many molecular interactions will occur.", tag: "Why stoich?" },
+      { q: "Two substances weigh 4 grams each. Can you assume they contain the same number of molecules?", a: "No. Molecules of different substances have different masses. 4 g of NaCl (molar mass 58.5) contains far fewer molecules than 4 g of hydrogen gas (molar mass 2). Mass and molecule count are not the same thing.", tag: "Why stoich?" },
+      { q: "What is the 'burger restaurant' analogy in the packet and what does it teach?", a: "If you know a burger requires 2 buns, 1 patty, and 1 ketchup packet, you can figure out how many burgers you can make from your supply. Chemistry is the same — reactions have fixed ingredient ratios. Stoichiometry is the tool for calculating them.", tag: "Why stoich?" }
+    ]
+  },
+  s4: {
+    balancing: [
+      { q: "Why must a chemical equation be balanced before doing stoichiometry?", a: "Because the law of conservation of mass requires that atoms are neither created nor destroyed. The mole ratios used in stoichiometry come from the coefficients — if the equation isn't balanced, the coefficients are wrong and all calculations downstream will be wrong.", tag: "Balancing" },
+      { q: "What are coefficients and what can you change when balancing an equation?", a: "Coefficients are the large numbers in front of chemical formulas. You can only change coefficients — never change subscripts inside formulas, as that would change the chemical identity of the substance.", tag: "Balancing" },
+      { q: "Balance: Fe + O₂ → Fe₂O₃", a: "4Fe + 3O₂ → 2Fe₂O₃. Start with 2Fe for 1Fe₂O₃, then need 3O (3/2 O₂) — multiply everything by 2 to remove the fraction.", tag: "Balancing" },
+      { q: "Balance: Al + HCl → AlCl₃ + H₂", a: "2Al + 6HCl → 2AlCl₃ + 3H₂. Need 3 Cl on left → 3HCl → 3H on left. H mismatch (3 vs 2), multiply by 2: 2Al + 6HCl → 2AlCl₃ + 3H₂.", tag: "Balancing" },
+      { q: "Balance: C₃H₈ + O₂ → CO₂ + H₂O", a: "C₃H₈ + 5O₂ → 3CO₂ + 4H₂O. C: 3 → need 3CO₂. H: 8 → need 4H₂O. O: 6 + 4 = 10 on right → need 5O₂ on left.", tag: "Balancing" },
+      { q: "Balance: Na + Br₂ → NaBr", a: "2Na + Br₂ → 2NaBr. Br₂ gives 2 Br atoms, so you need 2 NaBr, which requires 2 Na.", tag: "Balancing" }
+    ],
+    moleratios: [
+      { q: "Where do mole ratios come from?", a: "From the coefficients of a balanced chemical equation. The coefficients tell you the exact ratio of moles in which substances react and are produced.", tag: "Mole ratios" },
+      { q: "From 4FeS + 7O₂ → 2Fe₂O₃ + 4SO₂, write the mole ratio relating FeS and Fe₂O₃.", a: "4 mol FeS = 2 mol Fe₂O₃. The conversion factors are (4 mol FeS / 2 mol Fe₂O₃) or (2 mol Fe₂O₃ / 4 mol FeS) depending on which direction you need to convert.", tag: "Mole ratios" },
+      { q: "From 2H₂ + O₂ → 2H₂O, how many moles of H₂O are produced from 6 moles of H₂?", a: "6 mol H₂O. The ratio is 2 mol H₂ = 2 mol H₂O (1:1). So 6 mol H₂ × (2 mol H₂O / 2 mol H₂) = 6 mol H₂O.", tag: "Mole ratios" },
+      { q: "From N₂ + 3H₂ → 2NH₃, if 2.75 moles of NH₃ are needed, how many moles of N₂ are required?", a: "1.375 mol N₂. Setup: 2.75 mol NH₃ × (1 mol N₂ / 2 mol NH₃) = 1.375 mol N₂.", tag: "Mole ratios" },
+      { q: "From 4FeS + 7O₂ → 2Fe₂O₃ + 4SO₂, how many mole ratios can be written in total?", a: "6 mole ratios — one for each unique pair of substances in the equation (FeS/O₂, FeS/Fe₂O₃, FeS/SO₂, O₂/Fe₂O₃, O₂/SO₂, Fe₂O₃/SO₂). But you only need the one connecting your given to your desired substance.", tag: "Mole ratios" }
+    ],
+    setup: [
+      { q: "What are the three steps of stoichiometry, in order?", a: "A: Balance the chemical equation. B: Extract mole ratios from the balanced equation's coefficients. C: Use dimensional analysis with those mole ratios to solve for the unknown quantity.", tag: "Problem setup" },
+      { q: "What is the molar map pathway for a mass-to-mass problem?", a: "grams A → moles A → moles B → grams B. This requires three conversion factors: molar mass of A, mole ratio from the balanced equation, and molar mass of B.", tag: "Problem setup" },
+      { q: "In the worked example 5g AgNO₃ → ? g Ag₂CO₃, what is the mole ratio and where does it come from?", a: "1 mol Ag₂CO₃ = 2 mol AgNO₃. It comes from the balanced equation 2AgNO₃ + Na₂CO₃ → Ag₂CO₃ + 2NaNO₃, where the coefficients show 2 AgNO₃ for every 1 Ag₂CO₃.", tag: "Problem setup" },
+      { q: "You set up a stoichiometry problem and your final answer has units of mol²/g. What went wrong?", a: "A conversion factor is flipped. When units don't cancel correctly, it means one of your fractions is upside down. Find the conversion factor with the problematic unit and invert it.", tag: "Problem setup" },
+      { q: "What equivalence statement do you use to go from moles to molecules?", a: "1 mol = 6.022 × 10²³ molecules. This gives two conversion factors: (6.022×10²³ / 1 mol) for moles→molecules, or (1 mol / 6.022×10²³) for molecules→moles.", tag: "Problem setup" }
+    ],
+    massmass: [
+      { q: "How many grams of water are produced from 24 g of O₂? (2H₂ + O₂ → 2H₂O)", a: "27 g H₂O. Setup: 24 g O₂ × (1 mol O₂ / 32 g) × (2 mol H₂O / 1 mol O₂) × (18 g H₂O / 1 mol H₂O) = 27 g.", tag: "Mass to mass" },
+      { q: "How many grams of Na react with 160 g of Br₂? (2Na + Br₂ → 2NaBr)", a: "46 g Na. Setup: 160 g Br₂ × (1 mol Br₂ / 160 g) × (2 mol Na / 1 mol Br₂) × (23 g Na / 1 mol Na) = 46 g.", tag: "Mass to mass" },
+      { q: "What three equivalence statements do you need for a full mass-to-mass problem?", a: "1) 1 mol A = (molar mass of A) g — converts grams A to moles A. 2) (coeff A) mol A = (coeff B) mol B — the mole ratio from the balanced equation. 3) 1 mol B = (molar mass of B) g — converts moles B to grams B.", tag: "Mass to mass" },
+      { q: "You are asked for molecules of product instead of grams. How does the setup change?", a: "Add one more conversion factor at the end: × (6.022 × 10²³ molecules / 1 mol). Everything else in the setup is identical — you just don't stop at grams.", tag: "Mass to mass" },
+      { q: "From C₂H₆ + 7O₂ → 4CO₂ + 6H₂O: how many grams of CO₂ are produced with 360 g of H₂O? (MM CO₂ = 44, MM H₂O = 18)", a: "587 g CO₂. Setup: 360 g H₂O × (1 mol / 18 g) × (4 mol CO₂ / 6 mol H₂O) × (44 g / 1 mol CO₂) = 587 g.", tag: "Mass to mass" }
+    ]
+  }
+};
+
+// State
+var fcState = { s12: { cards: [], idx: 0, flipped: false }, s4: { cards: [], idx: 0, flipped: false } };
+var quizState = { s12: { questions: [], idx: 0, score: 0, answered: false }, s4: { questions: [], idx: 0, score: 0, answered: false } };
+
+function getAllCards(section) {
+  var all = [];
+  Object.values(allCards[section]).forEach(function(arr) { all = all.concat(arr); });
+  return all;
+}
+
+function getCardsByTopic(section, topic) {
+  if (topic === 'all') return getAllCards(section);
+  return allCards[section][topic] || [];
+}
+
+function shuffle(arr) {
+  var a = arr.slice();
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+
+function initFlashcards(sec) {
+  var topic = document.getElementById(sec + '-fc-topic').value;
+  var cards = shuffle(getCardsByTopic(sec, topic));
+  fcState[sec].cards = cards;
+  fcState[sec].idx = 0;
+  fcState[sec].flipped = false;
+  renderCard(sec);
+}
+
+function renderCard(sec) {
+  var st = fcState[sec];
+  var card = st.cards[st.idx];
+  if (!card) return;
+  var el = document.getElementById(sec + '-fc-card');
+  el.classList.remove('flipped');
+  document.getElementById(sec + '-fc-tag').textContent = card.tag;
+  document.getElementById(sec + '-fc-q').textContent = card.q;
+  document.getElementById(sec + '-fc-a').textContent = card.a;
+  document.getElementById(sec + '-fc-count').textContent = 'Card ' + (st.idx + 1) + ' of ' + st.cards.length;
+  document.getElementById(sec + '-fc-bar').style.width = (((st.idx) / st.cards.length) * 100).toFixed(0) + '%';
+  document.getElementById(sec + '-fc-results').style.display = 'none';
+  document.getElementById(sec + '-fc-prev').disabled = st.idx === 0;
+  document.getElementById(sec + '-fc-next').disabled = st.idx >= st.cards.length - 1;
+  st.flipped = false;
+}
+
+function flipCard(sec) {
+  var st = fcState[sec];
+  var el = document.getElementById(sec + '-fc-card');
+  if (!st.flipped) {
+    el.classList.add('flipped');
+    st.flipped = true;
+    document.getElementById(sec + '-fc-results').style.display = 'flex';
+  }
+}
+
+function prevCard(sec) {
+  if (fcState[sec].idx > 0) { fcState[sec].idx--; renderCard(sec); }
+}
+
+function nextCard(sec) {
+  if (fcState[sec].idx < fcState[sec].cards.length - 1) { fcState[sec].idx++; renderCard(sec); }
+}
+
+function markCard(sec, result) {
+  nextCard(sec);
+  if (fcState[sec].idx === fcState[sec].cards.length - 1 && fcState[sec].flipped === false) {
+    document.getElementById(sec + '-fc-bar').style.width = '100%';
+  }
+}
+
+// ===== QUIZ DATA =====
+var allQuestions = {
+  s12: {
+    sigfigs: [
+      { q: "How many significant figures does 0.0840 have?", opts: ["2","3","4","1"], correct: 1, exp: "3 sig figs. Leading zeros (0.0) are not significant. The 8, 4, and the trailing zero all count — the trailing zero is significant because a decimal point is present." },
+      { q: "You calculate 4.5 × 6.75. What is the correct answer with proper sig figs?", opts: ["30.4","30","30.375","31"], correct: 1, exp: "30 (2 sig figs). 4.5 has 2 sig figs and 6.75 has 3. The answer is limited to 2 sig figs. 4.5 × 6.75 = 30.375, which rounds to 30." },
+      { q: "How many sig figs does 1000. (with a decimal point) have?", opts: ["1","2","3","4"], correct: 3, exp: "4 sig figs. The decimal point makes all trailing zeros significant. Without the decimal point, 1000 would have only 1 sig fig." },
+      { q: "23,800 − 6,866 = 16,934. Rounded to correct sig figs, what is the answer?", opts: ["16,934","16,900","17,000","16,930"], correct: 1, exp: "16,900. For subtraction, you limit to the least precise decimal place. 23,800 is only reliable to the hundreds place, so the answer rounds to 16,900." },
+      { q: "When rounding 79.3500 to the tenths place, what is the correct answer?", opts: ["79.3","79.4","79.35","79.5"], correct: 1, exp: "79.4. The deciding digit is 5 followed only by zeros, so round to even. The tenths digit would be 3 (odd) or 4 (even) — round up to 4, the even number." },
+      { q: "How many sig figs does 800.01 have?", opts: ["2","3","4","5"], correct: 3, exp: "5 sig figs. Both zeros between 8 and 1 are sandwiched between non-zero digits, so they are always significant. All 5 digits count." }
+    ],
+    scinotation: [
+      { q: "Which is the correct scientific notation for 340,000,000?", opts: ["34 × 10⁷","3.4 × 10⁸","3.40 × 10⁷","0.34 × 10⁹"], correct: 1, exp: "3.4 × 10⁸. The number in front must be between 1 and 10. Move the decimal 8 places left to get 3.4, giving exponent 8." },
+      { q: "Calculate (4 × 10⁻²)(1.5 × 10⁹).", opts: ["6 × 10⁷","6 × 10¹¹","6 × 10⁻¹⁸","5.5 × 10⁷"], correct: 0, exp: "6 × 10⁷. Multiply the numbers: 4 × 1.5 = 6. Add the exponents: −2 + 9 = 7." },
+      { q: "What is 5.990 × 10⁻³ written in long form?", opts: ["0.005990","0.05990","5990","0.0005990"], correct: 0, exp: "0.005990. A negative exponent of 3 means move the decimal 3 places left. The trailing zeros are kept because they were significant in the original number." },
+      { q: "Calculate (8.0 × 10³) ÷ (4.0 × 10⁻⁷).", opts: ["2.0 × 10⁻⁴","2.0 × 10¹⁰","2.0 × 10⁴","32 × 10¹⁰"], correct: 1, exp: "2.0 × 10¹⁰. Divide numbers: 8.0 ÷ 4.0 = 2.0. Subtract exponents: 3 − (−7) = 10." }
+    ],
+    mole: [
+      { q: "How many particles are in 1 mole of any substance?", opts: ["6.022 × 10²⁰","6.022 × 10²³","6.022 × 10²⁶","1.66 × 10⁻²⁴"], correct: 1, exp: "6.022 × 10²³. This is Avogadro's number. It applies to any substance — atoms, molecules, or ions." },
+      { q: "1 mole of carbon weighs 12 grams. 1 mole of oxygen gas (O₂) weighs 32 grams. What principle explains this?", opts: ["Avogadro's law","The mole was defined so that atomic mass in amu equals molar mass in grams","The law of conservation of mass","Dalton's atomic theory"], correct: 1, exp: "Avogadro's number was specifically chosen so that the atomic mass of any element in amu numerically equals its molar mass in grams. That's why the numbers match." },
+      { q: "How many liters does 0.5 moles of a gas occupy at STP?", opts: ["11.2 L","22.4 L","44.8 L","5.6 L"], correct: 0, exp: "11.2 L. Use: 0.5 mol × (22.4 L / 1 mol) = 11.2 L. The 22.4 L/mol conversion only applies to gases at STP." },
+      { q: "What is the difference between moles and molecules?", opts: ["They are the same thing","Moles is a unit of mass; molecules is a unit of count","Molecules refers to individual particles; moles is a quantity containing 6.022×10²³ particles","Moles only applies to gases; molecules applies to everything"], correct: 2, exp: "Molecules refers to individual particles. 1 mole contains 6.022 × 10²³ molecules. They look similar as words but mean completely different things — never abbreviate molecules as moles." }
+    ],
+    molarmass: [
+      { q: "What is the molar mass of H₂O?", opts: ["16 g/mol","17 g/mol","18 g/mol","20 g/mol"], correct: 2, exp: "18 g/mol. H: 2 × 1.0 = 2.0. O: 1 × 16.0 = 16.0. Total = 18.0 g/mol." },
+      { q: "How many oxygen atoms are in (NO₃)₂?", opts: ["2","3","5","6"], correct: 3, exp: "6 oxygen atoms. The subscript 2 outside the parentheses multiplies everything inside: N×2 = 2 nitrogen, O₃×2 = 6 oxygen." },
+      { q: "What is the molar mass of (NH₄)₂SO₄?", opts: ["96.1 g/mol","114.1 g/mol","132.1 g/mol","148.1 g/mol"], correct: 2, exp: "132.1 g/mol. N: 14.0×2=28, H: 1.0×8=8, S: 32.1, O: 16.0×4=64. Total = 132.1 g/mol. Remember the 2 outside the parentheses multiplies both N and H₄." },
+      { q: "What is the molar mass of Br₂? (Br = 80 g/mol)", opts: ["80 g/mol","160 g/mol","40 g/mol","120 g/mol"], correct: 1, exp: "160 g/mol. Bromine is diatomic — the subscript 2 means you need two bromine atoms: 80 × 2 = 160 g/mol." }
+    ],
+    dimanalysis: [
+      { q: "You want to convert 45 minutes to hours. Which conversion factor do you use?", opts: ["(60 min / 1 hr)","(1 hr / 60 min)","(1 min / 60 hr)","(45 min / 1 hr)"], correct: 1, exp: "(1 hr / 60 min). You want to cancel minutes, so minutes must be in the denominator. 45 min × (1 hr / 60 min) = 0.75 hr." },
+      { q: "What does it mean when your units don't cancel correctly in dimensional analysis?", opts: ["You need more decimal places","A conversion factor is flipped or missing","Your molar mass is wrong","You should use a different equation"], correct: 1, exp: "A conversion factor is either flipped (upside down) or missing. Find the conversion factor that contains the unwanted unit and invert it so that unit appears in the denominator." },
+      { q: "How many hours are in a fortnight? (1 fortnight = 2 weeks)", opts: ["168 hours","336 hours","48 hours","720 hours"], correct: 1, exp: "336 hours. Setup: 2 weeks × (7 days / 1 week) × (24 hours / 1 day) = 336 hours." },
+      { q: "Convert 60 miles/hour to feet/second. (1 mile = 5280 ft, 1 hour = 3600 sec)", opts: ["60 ft/sec","88 ft/sec","52.8 ft/sec","100 ft/sec"], correct: 1, exp: "88 ft/sec. Setup: 60 mi/hr × (5280 ft / 1 mi) × (1 hr / 3600 sec) = 316,800 / 3600 = 88 ft/sec." }
+    ],
+    conversions: [
+      { q: "How many moles are in 50 g of Br₂? (Molar mass = 160 g/mol)", opts: ["0.31 mol","0.50 mol","3.1 mol","8000 mol"], correct: 0, exp: "0.31 mol. Setup: 50 g × (1 mol / 160 g) = 0.3125 mol ≈ 0.31 mol." },
+      { q: "How many molecules are in 3 g of NaCl? (Molar mass NaCl = 58.5 g/mol)", opts: ["3.09 × 10²² molecules","1.81 × 10²⁴ molecules","0.051 molecules","5.13 × 10²³ molecules"], correct: 0, exp: "3.09 × 10²² molecules. Setup: 3 g × (1 mol / 58.5 g) × (6.022×10²³ / 1 mol) = 3.09 × 10²²." },
+      { q: "Why must you always go through moles when converting between grams and molecules?", opts: ["Because the periodic table only shows moles","Because moles is the only unit that accounts for the different masses of different atoms","Because molecules can't be weighed directly","Because grams and molecules are the same unit"], correct: 1, exp: "Moles accounts for the fact that different atoms/molecules have different masses. 1 gram of hydrogen contains far more atoms than 1 gram of gold — moles is the bridge that makes this comparison meaningful." },
+      { q: "Convert 1.2 × 10³ grams of NH₃ to moles. (Molar mass NH₃ = 17 g/mol)", opts: ["70.6 mol","0.014 mol","20,400 mol","12,000 mol"], correct: 0, exp: "70.6 mol. Setup: 1200 g × (1 mol / 17 g) = 70.6 mol." }
+    ],
+    why: [
+      { q: "Adding 2 teaspoons of KOH to HCl produces more mass of product than adding 2 teaspoons of LiOH. Does this mean more molecules of product formed?", opts: ["Yes, more mass means more molecules","No, the same number of molecules formed — K is just heavier than Li","Yes, because KOH is a stronger base","No, because the reaction is incomplete"], correct: 1, exp: "No. The same number of molecules reacted in both cases. Potassium (K) is heavier than lithium (Li), so the KCl product weighs more even though the same number of molecules were produced. Mass and molecule count are not the same." },
+      { q: "Which of the following best describes the purpose of stoichiometry?", opts: ["To balance chemical equations","To identify unknown substances","To quantify chemical reactions — predicting how much product forms from known amounts of reactant","To measure the speed of chemical reactions"], correct: 2, exp: "Stoichiometry is the practice of quantifying chemical reactions. It lets you predict product quantities from reactant quantities (and vice versa) using the fixed molecular ratios in a balanced equation." }
+    ]
+  },
+  s4: {
+    balancing: [
+      { q: "Balance: Fe + O₂ → Fe₂O₃. What are the correct coefficients?", opts: ["2Fe + O₂ → Fe₂O₃","4Fe + 3O₂ → 2Fe₂O₃","Fe + O₂ → Fe₂O₃","2Fe + 3O₂ → 2Fe₂O₃"], correct: 1, exp: "4Fe + 3O₂ → 2Fe₂O₃. Need 2Fe for 1Fe₂O₃, so start with 2Fe → Fe₂O₃. Need 3O, so 3/2 O₂. Multiply everything by 2 to get whole numbers: 4Fe + 3O₂ → 2Fe₂O₃." },
+      { q: "When balancing an equation, what can you never change?", opts: ["The coefficients","The subscripts inside formulas","The products","The arrow direction"], correct: 1, exp: "You can never change subscripts inside chemical formulas. Changing a subscript changes the substance itself. Only coefficients (numbers in front of formulas) can be changed to balance an equation." },
+      { q: "Balance: Al + HCl → AlCl₃ + H₂. What is the coefficient of HCl?", opts: ["2","3","6","1"], correct: 2, exp: "6. The balanced equation is 2Al + 6HCl → 2AlCl₃ + 3H₂. You need 3 Cl per Al (to form AlCl₃), and with 2 Al you need 6 HCl." },
+      { q: "Balance: C₃H₈ + O₂ → CO₂ + H₂O. What is the coefficient of O₂?", opts: ["3","4","5","6"], correct: 2, exp: "5. The balanced equation is C₃H₈ + 5O₂ → 3CO₂ + 4H₂O. Right side has 6 + 4 = 10 oxygen atoms, requiring 5 O₂ on the left." },
+      { q: "Why do we sometimes multiply all coefficients by 2 when balancing?", opts: ["To make the numbers larger","To eliminate fractional coefficients","To check our work","Because the law of conservation of mass requires it"], correct: 1, exp: "To eliminate fractional coefficients. If balancing gives you 3/2 O₂, multiplying everything by 2 converts all fractions to whole numbers while maintaining the correct ratios." }
+    ],
+    moleratios: [
+      { q: "From 4FeS + 7O₂ → 2Fe₂O₃ + 4SO₂, how many moles of O₂ are needed to react with 2 moles of FeS?", opts: ["3.5 mol O₂","7 mol O₂","2 mol O₂","14 mol O₂"], correct: 0, exp: "3.5 mol O₂. The ratio is 4 mol FeS = 7 mol O₂. So: 2 mol FeS × (7 mol O₂ / 4 mol FeS) = 3.5 mol O₂." },
+      { q: "From N₂ + 3H₂ → 2NH₃, how many moles of NH₃ are produced from 6 moles of H₂?", opts: ["6 mol","4 mol","3 mol","2 mol"], correct: 1, exp: "4 mol NH₃. The ratio is 3 mol H₂ = 2 mol NH₃. So: 6 mol H₂ × (2 mol NH₃ / 3 mol H₂) = 4 mol NH₃." },
+      { q: "Where do mole ratios come from?", opts: ["The periodic table","The coefficients of a balanced chemical equation","The molar masses of the substances","Avogadro's number"], correct: 1, exp: "From the coefficients of a balanced chemical equation. The coefficients tell you the exact ratio of moles in which substances react and are produced. This is why balancing must come first." },
+      { q: "From 2Na + Br₂ → 2NaBr, convert 3 moles of Na to moles of Br₂.", opts: ["3 mol Br₂","1.5 mol Br₂","6 mol Br₂","2 mol Br₂"], correct: 1, exp: "1.5 mol Br₂. The ratio is 2 mol Na = 1 mol Br₂. So: 3 mol Na × (1 mol Br₂ / 2 mol Na) = 1.5 mol Br₂." }
+    ],
+    setup: [
+      { q: "What is the correct order of steps in stoichiometry?", opts: ["Extract mole ratios, then balance, then calculate","Balance equation, extract mole ratios, use dimensional analysis","Use dimensional analysis first, then balance","Calculate molar masses first, then balance"], correct: 1, exp: "Always: A) balance the equation, B) extract mole ratios from coefficients, C) use dimensional analysis. Doing them out of order will give wrong answers — especially skipping balancing." },
+      { q: "For a mass-to-mass stoichiometry problem, how many conversion factors do you need?", opts: ["1","2","3","4"], correct: 2, exp: "3 conversion factors: (1) molar mass of A to convert grams A to moles A, (2) mole ratio from balanced equation to convert moles A to moles B, (3) molar mass of B to convert moles B to grams B." },
+      { q: "In a stoichiometry calculation, your final units are mol²/g instead of g. What does this tell you?", opts: ["Your molar mass is wrong","You forgot to balance the equation","A conversion factor is flipped or missing","Your answer is correct — mol²/g is normal"], correct: 2, exp: "A conversion factor is flipped or missing. Correct dimensional analysis always leaves you with only the desired unit. If wrong units survive, find the conversion factor containing that unit and invert it." },
+      { q: "Which conversion factor do you use to go from moles B to grams B?", opts: ["(1 mol / molar mass in g)","(molar mass in g / 1 mol)","(6.022×10²³ / 1 mol)","(1 mol / 6.022×10²³)"], correct: 1, exp: "(molar mass in g / 1 mol). This puts moles in the denominator so they cancel, leaving grams. The molar mass comes from adding atomic weights using the periodic table." }
+    ],
+    massmass: [
+      { q: "From 2H₂ + O₂ → 2H₂O: how many grams of H₂O are produced from 24 g of O₂? (MM O₂=32, MM H₂O=18)", opts: ["27 g","18 g","36 g","13.5 g"], correct: 0, exp: "27 g. Setup: 24 g O₂ × (1 mol O₂/32 g) × (2 mol H₂O/1 mol O₂) × (18 g H₂O/1 mol H₂O) = 27 g." },
+      { q: "From 2Na + Br₂ → 2NaBr: how many grams of Na react with 160 g of Br₂? (MM Na=23, MM Br₂=160)", opts: ["23 g","46 g","92 g","11.5 g"], correct: 1, exp: "46 g Na. Setup: 160 g Br₂ × (1 mol/160 g) × (2 mol Na/1 mol Br₂) × (23 g/1 mol Na) = 46 g. Notice 160 g Br₂ = exactly 1 mole, making the calculation clean." },
+      { q: "A stoichiometry problem asks for molecules of product instead of grams. What extra step do you add?", opts: ["Multiply by molar mass at the end","Multiply by Avogadro's number at the end","Divide by Avogadro's number at the end","No extra step is needed"], correct: 1, exp: "Multiply by Avogadro's number at the end: × (6.022×10²³ molecules / 1 mol). This converts moles of product to individual molecules. All other steps remain the same." },
+      { q: "From C₃H₈ + 5O₂ → 3CO₂ + 4H₂O: how many grams of H₂O from 20 g of C₃H₈? (MM C₃H₈=44, MM H₂O=18)", opts: ["16.4 g","32.7 g","44 g","8.2 g"], correct: 1, exp: "32.7 g. Setup: 20 g C₃H₈ × (1 mol/44 g) × (4 mol H₂O/1 mol C₃H₈) × (18 g/1 mol H₂O) = 32.7 g." }
+    ]
+  }
+};
+
+function getAllQuestions(section) {
+  var all = [];
+  Object.values(allQuestions[section]).forEach(function(arr) { all = all.concat(arr); });
+  return all;
+}
+
+function getQuestionsByTopic(section, topic) {
+  if (topic === 'all') return getAllQuestions(section);
+  return allQuestions[section][topic] || [];
+}
+
+function startQuiz(sec) {
+  var topic = document.getElementById(sec + '-quiz-topic').value;
+  var qs = shuffle(getQuestionsByTopic(sec, topic));
+  quizState[sec] = { questions: qs, idx: 0, score: 0, answered: false };
+  renderQuestion(sec);
+}
+
+function renderQuestion(sec) {
+  var st = quizState[sec];
+  var container = document.getElementById(sec + '-quiz-content');
+  if (st.idx >= st.questions.length) {
+    renderSummary(sec);
+    return;
+  }
+  var q = st.questions[st.idx];
+  var html = '<div class="quiz-question-block">';
+  html += '<div class="q-number">Question ' + (st.idx + 1) + ' of ' + st.questions.length + '</div>';
+  html += '<div class="q-text">' + q.q + '</div>';
+  html += '<div class="q-options">';
+  q.opts.forEach(function(opt, i) {
+    html += '<button class="q-option" onclick="answerQuestion(\'' + sec + '\',' + i + ')" id="' + sec + '-opt-' + i + '">' + opt + '</button>';
+  });
+  html += '</div>';
+  html += '<div class="q-explanation" id="' + sec + '-exp">' + q.exp + '</div>';
+  html += '</div>';
+  html += '<div class="quiz-nav">';
+  html += '<div class="quiz-score">Score: ' + st.score + ' / ' + st.idx + '</div>';
+  html += '<button class="quiz-next-btn" id="' + sec + '-next-btn" onclick="nextQuestion(\'' + sec + '\')">Next question →</button>';
+  html += '</div>';
+  container.innerHTML = html;
+  st.answered = false;
+}
+
+function answerQuestion(sec, chosen) {
+  var st = quizState[sec];
+  if (st.answered) return;
+  st.answered = true;
+  var q = st.questions[st.idx];
+  var correct = q.correct;
+  for (var i = 0; i < q.opts.length; i++) {
+    var btn = document.getElementById(sec + '-opt-' + i);
+    btn.disabled = true;
+    if (i === correct) btn.classList.add('correct');
+    else if (i === chosen && chosen !== correct) btn.classList.add('wrong');
+  }
+  if (chosen === correct) st.score++;
+  document.getElementById(sec + '-exp').classList.add('show');
+  document.getElementById(sec + '-next-btn').classList.add('show');
+}
+
+function nextQuestion(sec) {
+  quizState[sec].idx++;
+  renderQuestion(sec);
+}
+
+function renderSummary(sec) {
+  var st = quizState[sec];
+  var pct = st.questions.length > 0 ? Math.round((st.score / st.questions.length) * 100) : 0;
+  var msg = pct >= 90 ? "Excellent work!" : pct >= 70 ? "Good job — review the topics you missed." : "Keep studying — try the flashcards for the topics you found difficult.";
+  var html = '<div class="quiz-summary">';
+  html += '<h3>Quiz complete</h3>';
+  html += '<div class="score-big">' + pct + '%</div>';
+  html += '<p>' + st.score + ' correct out of ' + st.questions.length + ' questions. ' + msg + '</p>';
+  html += '<button class="quiz-restart-btn" onclick="startQuiz(\'' + sec + '\')">Try again</button>';
+  html += '</div>';
+  document.getElementById(sec + '-quiz-content').innerHTML = html;
+}
+
+// ===== UI CONTROLS =====
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function showMode(sec, mode, btn) {
+  var panels = document.querySelectorAll('#' + sec + ' .mode-panel');
+  panels.forEach(function(p) { p.style.display = 'none'; });
+  document.getElementById(sec + '-' + mode).style.display = 'block';
+  var modeBtns = document.querySelectorAll('#' + sec + ' .mode-btn');
+  modeBtns.forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  if (mode === 'flashcards') initFlashcards(sec);
+}
+
+function showTopic(sec, topic, btn) {
+  document.querySelectorAll('#' + sec + '-notes .topic-content').forEach(function(t) { t.classList.remove('active'); });
+  document.getElementById(sec + '-' + topic).classList.add('active');
+  document.querySelectorAll('#' + sec + '-notes .topic-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+}
+
+// Init flashcards on load
+initFlashcards('s12');
+initFlashcards('s4');
+</script>
+</body>
+</html>
